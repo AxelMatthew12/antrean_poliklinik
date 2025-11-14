@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "877393119251",
+    "firebase_url": "https://antrian-rumah-sakit-pbl-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "antrian-rumah-sakit-pbl",
+    "storage_bucket": "antrian-rumah-sakit-pbl.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877393119251:android:869fffdee266ede9c617e6",
+        "android_client_info": {
+          "package_name": "com.example.antrean_poliklinik"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSiIjLx5zK3emdO_wZlVmhc-v4nhs3StI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
