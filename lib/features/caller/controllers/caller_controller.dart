@@ -35,14 +35,33 @@ class CallerController {
   // SELESAIKAN ANTREAN
   Future<void> selesaikan(String layananId, String nomorAntrean) async {
     try {
-      final success =
-          await antreanService.selesaikanAntrean(layananId, nomorAntrean);
+      final success = await antreanService.selesaikanAntrean(
+        layananId,
+        nomorAntrean,
+      );
 
       if (success) {
         print("Antrean $nomorAntrean telah diselesaikan.");
       }
     } catch (e) {
       print("Error saat menyelesaikan antrean: $e");
+    }
+  }
+
+  // BATALKAN ANTREANa
+  // BATALKAN ANTREAN
+  Future<void> batalkan(String layananId, String nomorAntrean) async {
+    try {
+      final success = await antreanService.batalkanAntrean(
+        layananId,
+        nomorAntrean,
+      );
+
+      if (success) {
+        print("Antrean $nomorAntrean telah dibatalkan.");
+      }
+    } catch (e) {
+      print("Error saat membatalkan antrean: $e");
     }
   }
 }

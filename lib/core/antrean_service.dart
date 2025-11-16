@@ -15,9 +15,7 @@ class AntreanService {
     }
   }
 
-  // ========================================================================
-  // 1. GENERATE NOMOR ANTREAN (menunggu)
-  // ========================================================================
+  // 1. Function GENERATE NOMOR ANTREAN (menunggu)
   Future<String> generateNomorAntrean(
     String layananId,
     String pasienUid,
@@ -41,6 +39,7 @@ class AntreanService {
     final antreanRef = db.child("antrean/$layananId/$nomorAntrean");
 
     await antreanRef.set({
+      // table struktur
       "nomor": nomorAntrean,
       "pasien_uid": pasienUid,
       "layanan_id": layananId,
@@ -54,9 +53,7 @@ class AntreanService {
     return nomorAntrean;
   }
 
-  // ========================================================================
   // 2. PANGGIL ANTREAN BERIKUTNYA (menunggu → dilayani)
-  // ========================================================================
   Future<Map<String, dynamic>?> panggilAntreanBerikutnya(
     String layananId,
     String loketId,
@@ -88,9 +85,7 @@ class AntreanService {
     return {"nomor": nomorAntrean, "data": data};
   }
 
-  // ========================================================================
   // 3. AMBIL ANTREAN YANG SEDANG DILAYANI
-  // ========================================================================
   Future<String?> getSedangDilayani(String layananId) async {
     final antreanRef = db.child("antrean/$layananId");
 
@@ -107,13 +102,8 @@ class AntreanService {
     return snapshot.children.first.key;
   }
 
-  // ========================================================================
-  // 4. SELESAIKAN ANTREAN (dilayani → selesai)
-  // ========================================================================
-  Future<bool> selesaikanAntrean(
-    String layananId,
-    String nomorAntrean,
-  ) async {
+  // 4. SELESAIKAN ANTREAN YANG DILAYANI
+  Future<bool> selesaikanAntrean(String layananId, String nomorAntrean) async {
     final antreanRef = db.child("antrean/$layananId/$nomorAntrean");
 
     final snapshot = await antreanRef.get();
@@ -138,13 +128,24 @@ class AntreanService {
     return true;
   }
 
-  // ========================================================================
-  // 5. BATALKAN ANTREAN (opsional)
-  // ========================================================================
-  Future<bool> batalkanAntrean(
-    String layananId,
-    String nomorAntrean,
-  ) async {
+  // 5. BATALKAN ANTREAN (opsional untuk pasien)
+  // Future<bool> batalkanAntrean(String layananId, String nomorAntrean) async {
+  //   final antreanRef = db.child("antrean/$layananId/$nomorAntrean");
+
+  //   final snapshot = await antreanRef.get();
+
+  //   if (!snapshot.exists) {
+  //     print("Antrean tidak ditemukan");
+  //     return false;
+  //   }
+
+  //   await antreanRef.update({"status": "dibatalkan"});
+
+  //   print("Antrean $nomorAntrean dibatalkan.");
+  //   return true;
+  // }
+
+  Future<bool> batalkanAntrean(String layananId, String nomorAntrean) async {
     final antreanRef = db.child("antrean/$layananId/$nomorAntrean");
 
     final snapshot = await antreanRef.get();
@@ -154,8 +155,15 @@ class AntreanService {
       return false;
     }
 
+    final data = snapshot.value as Map;
+    if (data["status"] == "selesai" || data["status"] == "dibatalkan") {
+      print("Antrean sudah selesai/dibatalkan.");
+      return false;
+    }
+
     await antreanRef.update({
       "status": "dibatalkan",
+      "waktu_selesai": DateTime.now().toIso8601String(),
     });
 
     print("Antrean $nomorAntrean dibatalkan.");
