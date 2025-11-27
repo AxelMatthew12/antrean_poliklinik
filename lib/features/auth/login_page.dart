@@ -1,13 +1,17 @@
+import 'package:antrean_poliklinik/features/auth/register_page.dart';
 import 'package:antrean_poliklinik/features/auth/welcome_page.dart';
 import 'package:antrean_poliklinik/features/home/homepage.dart';
 import 'package:antrean_poliklinik/features/caller/caller_page.dart';
-import 'package:antrean_poliklinik/features/caller/pasien_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+// UserType
+enum UserType { Petugas, Pasien }
+
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final UserType userType;
+  const LoginScreen({super.key, required this.userType});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -26,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
     bool isSuccess = title.toLowerCase().contains("berhasil");
 
     IconData icon = isSuccess ? Icons.check_circle : Icons.error;
-    Color iconColor = isSuccess ? Colors.green : Colors.red;
+    Color iconColor = isSuccess ? Colors.blue : Colors.red;
 
     return showDialog(
       context: context,
@@ -47,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: isSuccess
-                      ? Colors.green.shade700
+                      ? Colors.blue.shade700
                       : Colors.red.shade700,
                 ),
               ),
@@ -67,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isSuccess ? Colors.green : Colors.red,
+                    backgroundColor: isSuccess ? Colors.blue : Colors.red,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -129,66 +133,64 @@ class _LoginScreenState extends State<LoginScreen> {
   // -------------------------------------------------------
   // CEK ROLE PETUGAS / USER
   // -------------------------------------------------------
-void checkRole(String email) async {
-  final refPetugas = FirebaseDatabase.instance.ref("petugas");
-  final refPasien = FirebaseDatabase.instance.ref("pasien");
+  void checkRole(String email) async {
+    final refPetugas = FirebaseDatabase.instance.ref("petugas");
+    final refPasien = FirebaseDatabase.instance.ref("pasien");
 
-  // ===============================
-  // CEK ROLE PETUGAS
-  // ===============================
-  final snapPetugas = await refPetugas.get();
+    // ===============================
+    // CEK ROLE PETUGAS
+    // ===============================
+    final snapPetugas = await refPetugas.get();
 
-  if (snapPetugas.exists) {
-    Map dataPetugas = snapPetugas.value as Map;
+    if (snapPetugas.exists) {
+      Map dataPetugas = snapPetugas.value as Map;
 
-    for (var value in dataPetugas.values) {
-      if (value['email'] == email) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CallerPage(
-              uid: value['uid'],
-              nama: value['nama'],
-              loketID: value['loket_id'],
-              password: null,
+      for (var value in dataPetugas.values) {
+        if (value['email'] == email) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CallerPage(
+                nama: value["nama"],
+                loketID: value["loket_id"],
+                email: value["email"],
+                uid: value["uid"],
+              ),
             ),
-          ),
-        );
-        return;
+          );
+          return;
+        }
       }
     }
-  }
 
-  // ===============================
-  // CEK ROLE PASIEN
-  // ===============================
-  final snapPasien = await refPasien.get();
+    // ===============================
+    // CEK ROLE PASIEN
+    // ===============================
+    final snapPasien = await refPasien.get();
 
-  if (snapPasien.exists) {
-    Map dataPasien = snapPasien.value as Map;
+    if (snapPasien.exists) {
+      Map dataPasien = snapPasien.value as Map;
 
-    for (var value in dataPasien.values) {
-      if (value['email'] == email) {
-        // KIRIM DATA PASIEN KE HOMEPAGE
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HomePage(userData: value),
-          ),
-        );
-        return;
+      for (var value in dataPasien.values) {
+        if (value['email'] == email) {
+          // KIRIM DATA PASIEN KE HOMEPAGE
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => HomePage(userData: value)),
+          );
+          return;
+        }
       }
     }
-  }
 
-  // ===============================
-  // JIKA TIDAK DITEMUKAN
-  // ===============================
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-  );
-}
+    // ===============================
+    // JIKA TIDAK DITEMUKAN
+    // ===============================
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+    );
+  }
 
   // -------------------------------------------------------
   // UI LOGIN
@@ -236,19 +238,14 @@ void checkRole(String email) async {
                     const SizedBox(width: 48),
                   ],
                 ),
-
-                const SizedBox(height: 10),
-                const Text(
-                  'Welcome',
-                  style: TextStyle(
-                    color: Color(0xFF2B6BFF),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
+                // LOGO
+                Center(
+                  child: Image.asset(
+                    'assets/images/login_logo.png',
+                    width: 180,
+                    height: 180,
                   ),
                 ),
-
-                const SizedBox(height: 28),
-
                 // FORM LOGIN
                 Form(
                   key: _formKey,
@@ -359,7 +356,7 @@ void checkRole(String email) async {
                         child: TextButton(
                           onPressed: () {},
                           child: const Text(
-                            'Forget Password',
+                            'Lupa Password?',
                             style: TextStyle(
                               color: Color(0xFF2B6BFF),
                               fontSize: 13,
@@ -384,7 +381,7 @@ void checkRole(String email) async {
                             backgroundColor: const Color(0xFF2B6BFF),
                           ),
                           child: const Text(
-                            'Log In',
+                            'Masuk',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
@@ -393,6 +390,33 @@ void checkRole(String email) async {
                           ),
                         ),
                       ),
+
+                      // ---------------------------
+                      // LINE BARU UNTUK REGISTER PASIEN
+                      // ---------------------------
+                      if (widget.userType == UserType.Pasien)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12.0),
+                          child: Center(
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen(),
+                                  ), // Halaman register pasien
+                                );
+                              },
+                              child: const Text(
+                                'Belum punya akun? Daftar',
+                                style: TextStyle(
+                                  color: Color(0xFF2B6BFF),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -406,5 +430,3 @@ void checkRole(String email) async {
     );
   }
 }
-
-
