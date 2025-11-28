@@ -12,7 +12,7 @@ Future<void> main() async {
   final caller = CallerController();
 
   print("=== STEP 1: AMBIL NOMOR ===");
-  final nomor = await kios.ambilNomor("POLI_UMUM", "A001");
+  final nomor = await kios.ambilNomor("POLI_UMUM", "A003");
   print("Nomor yang diambil pasien = $nomor");
 
   print("=== STEP 2: PANGGIL NOMOR ===");
