@@ -13,21 +13,20 @@ class KiosListMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _TabItem(
             title: "List Poli",
             isActive: activeTab == "List Poli",
             onTap: () => onTabChanged("List Poli"),
           ),
-          const SizedBox(width: 10),
           _TabItem(
-            title: "Appointment",
-            isActive: activeTab == "Appointment",
-            onTap: () => onTabChanged("Appointment"),
+            title: "Antrean",
+            isActive: activeTab == "Antrean",
+            onTap: () => onTabChanged("Antrean"),
           ),
-          const SizedBox(width: 10),
           _TabItem(
             title: "Riwayat",
             isActive: activeTab == "Riwayat",
@@ -55,17 +54,22 @@ class _TabItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? Colors.blue : const Color(0xFFE6EDFF),
-          borderRadius: BorderRadius.circular(20),
+          color: isActive ? const Color(0xFF256EFF) : Colors.white,
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(
+            color: const Color(0xFF256EFF),
+            width: 1.8,
+          ),
         ),
         child: Text(
           title,
           style: TextStyle(
-            color: isActive ? Colors.white : Colors.blue,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
+            color: isActive ? Colors.white : const Color(0xFF256EFF),
           ),
         ),
       ),

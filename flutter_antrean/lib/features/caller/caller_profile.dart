@@ -1,4 +1,4 @@
-import 'package:antrean_poliklinik/features/profile/logout.dart';
+import 'package:antrean_poliklinik/features/kios/Settings/logout.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 

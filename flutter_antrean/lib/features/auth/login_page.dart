@@ -1,6 +1,6 @@
 import 'package:antrean_poliklinik/features/auth/register_page.dart';
 import 'package:antrean_poliklinik/features/auth/welcome_page.dart';
-import 'package:antrean_poliklinik/features/home/homepage.dart';
+import 'package:antrean_poliklinik/features/kios/home/homepage.dart';
 import 'package:antrean_poliklinik/features/caller/caller_homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';

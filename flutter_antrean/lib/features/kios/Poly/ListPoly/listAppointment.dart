@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:antrean_poliklinik/widget/kiosListMenu.dart'; // Ensure the import is correct
-import 'package:antrean_poliklinik/features/kios/detail_antrean.dart';
-import 'package:antrean_poliklinik/features/kios/appoitment.dart';
+import 'package:antrean_poliklinik/features/kios/Poly/ListPoly/DetailPoly.dart';
+import 'package:antrean_poliklinik/features/kios/Poly/Queue/AntreanPage.dart';
+import 'package:antrean_poliklinik/features/kios/Poly/HistoryPage.dart';
 
-// ================= PoliCard Widget =================
 class PoliCard extends StatelessWidget {
   final PoliModel poli;
   final Map? userData;
@@ -15,19 +15,31 @@ class PoliCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F0FF),
+        color: const Color(0xFFDBE6FF),
         borderRadius: BorderRadius.circular(22),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CircleAvatar(
-            radius: 34,
-            backgroundImage: AssetImage("assets/profile.jpeg"),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6FA8FF),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.local_hospital_rounded,
+              size: 42,
+              color: Colors.white,
+            ),
           ),
-          const SizedBox(width: 14),
+
+          const SizedBox(width: 16),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,54 +47,66 @@ class PoliCard extends StatelessWidget {
                 Text(
                   poli.nama,
                   style: const TextStyle(
-                    fontSize: 17,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    color: Color(0xFF256EFF),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(poli.deskripsi, style: const TextStyle(fontSize: 13)),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DetailAntreanPage(
-                              poli: poli,
-                              userData: userData,
-                            ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 22, vertical: 6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: const Text("Info"),
-                    ),
-                    const Spacer(),
-                    const Icon(Icons.calendar_month_rounded, color: Colors.black87),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.info_outline_rounded, color: Colors.black87),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.help_outline_rounded, color: Colors.black87),
-                  ],
+
+                const SizedBox(height: 6),
+
+                Text(
+                  poli.deskripsi,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
                 ),
+
+                const SizedBox(height: 14),
+
+                SizedBox(
+                  height: 34,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DetailAntreanPage(
+                            poli: poli,
+                            userData: userData,
+                          ),
+                        ),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(
+                        color: Color(0xFF256EFF),
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text(
+                      "Informasi",
+                      style: TextStyle(
+                        color: Color(0xFF256EFF),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                )
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 }
+
+
 
 // ================= KiosListAntrean Widget =================
 class KiosListAntrean extends StatefulWidget {
@@ -111,16 +135,17 @@ class _KiosListAntreanState extends State<KiosListAntrean> {
     layananRef = db.ref("layanan");
   }
 
-  // Switch between different tab contents
-  Widget _buildTabContent() {
-    if (_activeTab == "List Poli") {
-      return _buildPoliList(); // Show Poli list
-    } else if (_activeTab == "Appointment") {
-      return _buildAppointmentList(); // Show Appointment list
-    } else {
-      return const Center(child: Text("Riwayat Content"));
-    }
+Widget _buildTabContent() {
+  if (_activeTab == "List Poli") {
+    return _buildPoliList();
+  } else if (_activeTab == "Antrean") {
+    return const AntreanPage(); // Halaman antrean
+  } else if (_activeTab == "Riwayat") {
+    return const HistoryPage(); // Halaman riwayat
+  } else {
+    return const SizedBox();
   }
+}
 
   // Fetch and display List Poli from Firebase
   Widget _buildPoliList() {
@@ -163,7 +188,7 @@ class _KiosListAntreanState extends State<KiosListAntrean> {
 
 // Appointment placeholder
 Widget _buildAppointmentList() {
-  return AppointmentPage(); // Memanggil widget AppointmentPage()
+  return AntreanPage(); // Memanggil widget AppointmentPage()
 }
 
 
@@ -196,7 +221,7 @@ Widget _buildAppointmentList() {
         children: const [
           Spacer(),
           Text(
-            "Kios Antrean",
+            "Pemeriksaan Pasien",
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue),
           ),
           Spacer(),
