@@ -138,100 +138,116 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 18,
+        ), // <= DIPERKECIL
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ====== TITLE ======
+            const Center(
+              child: Text(
+                "Profil Petugas",
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Color(0xFF256EFF),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
 
-        const Text(
-          "Antrean Pasien",
-          style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2B6BFF),
-          ),
-        ),
+            /// TAB MENU
+            CallerListMenu(
+              activeTab: activeTab,
+              onTabChanged: (tab) {
+                setState(() => activeTab = tab);
+              },
+            ),
 
-        const SizedBox(height: 12),
+            const SizedBox(height: 0),
 
-        /// TAB MENU
-        CallerListMenu(
-          activeTab: activeTab,
-          onTabChanged: (tab) {
-            setState(() => activeTab = tab);
-          },
-        ),
-
-        const SizedBox(height: 20),
-
-        /// LIST ANTREAN
-        Expanded(
-          child: StreamBuilder<List<AntreanModel>>(
-            stream: _getAntreanStream(activeTab),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final antreanList = snapshot.data!;
-
-              if (antreanList.isEmpty) {
-                return const Center(child: Text("Tidak ada antrean."));
-              }
-
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: antreanList.length,
-                itemBuilder: (context, index) {
-                  final antrean = antreanList[index];
-
-                  /// === PERBAIKAN TOMBOL ===
-                  String buttonText = "";
-                  if (antrean.status == "menunggu") {
-                    buttonText = "Layani";
-                  } else if (antrean.status == "berjalan") {
-                    buttonText = "Selesai";
-                  } else if (antrean.status == "selesai") {
-                    buttonText = "Detail";
+            /// LIST ANTREAN
+            Expanded(
+              child: StreamBuilder<List<AntreanModel>>(
+                stream: _getAntreanStream(activeTab),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
                   }
 
-                  return CallerAntreanCard(
-                    poli: antrean.poli,
-                    nomor: antrean.nomor,
-                    waktu: antrean.waktu,
-                    status: antrean.status,
-                    buttonText: buttonText,
-                    onPressed: () {
+                  final antreanList = snapshot.data!;
+
+                  if (antreanList.isEmpty) {
+                    return const Center(child: Text("Tidak ada antrean."));
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 0,
+                    ), // <= HILANGKAN
+                    itemCount: antreanList.length,
+                    itemBuilder: (context, index) {
+                      final antrean = antreanList[index];
+
+                      /// === PERBAIKAN TOMBOL ===
+                      String buttonText = "";
                       if (antrean.status == "menunggu") {
-                        _showConfirmDialog(
-                          title: "Layani Antrean",
-                          confirmText: "Ya, Lanjut",
-                          onConfirm: () => _updateStatus(antrean, "berjalan"),
-                        );
+                        buttonText = "Layani";
                       } else if (antrean.status == "berjalan") {
-                        _showConfirmDialog(
-                          title: "Selesaikan Antrean",
-                          confirmText: "Ya, Selesai",
-                          onConfirm: () => _updateStatus(antrean, "selesai"),
-                        );
+                        buttonText = "Selesai";
+                      } else if (antrean.status == "selesai") {
+                        buttonText = "Detail";
                       }
-                      /// === BUKA DETAIL ===
-                      else if (antrean.status == "selesai") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                CallerDetailAntrean(antrean: antrean),
-                          ),
-                        );
-                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                        ), // biar rapi
+                        child: CallerAntreanCard(
+                          poli: antrean.poli,
+                          nomor: antrean.nomor,
+                          waktu: antrean.waktu,
+                          status: antrean.status,
+                          buttonText: buttonText,
+                          onPressed: () {
+                            if (antrean.status == "menunggu") {
+                              _showConfirmDialog(
+                                title: "Layani Antrean",
+                                confirmText: "Ya, Lanjut",
+                                onConfirm: () =>
+                                    _updateStatus(antrean, "berjalan"),
+                              );
+                            } else if (antrean.status == "berjalan") {
+                              _showConfirmDialog(
+                                title: "Selesaikan Antrean",
+                                confirmText: "Ya, Selesai",
+                                onConfirm: () =>
+                                    _updateStatus(antrean, "selesai"),
+                              );
+                            } else if (antrean.status == "selesai") {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      CallerDetailAntrean(antrean: antrean),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      );
                     },
                   );
                 },
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

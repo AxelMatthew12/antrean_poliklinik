@@ -20,13 +20,13 @@ class CallerBottomNav extends StatelessWidget {
       height: 70,
       decoration: BoxDecoration(
         color: Colors.white, // HANYA kapsulnya yang putih
-        borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: const Color(0xFF256EFF), width: 2),
+        borderRadius: BorderRadius.circular(50),
+        // border: Border.all(color: const Color(0xFF256EFF), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.10),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -40,13 +40,17 @@ class CallerBottomNav extends StatelessWidget {
             alignment: currentIndex == 0
                 ? Alignment.centerLeft
                 : Alignment.centerRight,
-            child: Container(
-              width: (MediaQuery.of(context).size.width - 140) / 2 - 65,
-              margin: const EdgeInsets.symmetric(horizontal: 28),
-              height: 55,
-              decoration: BoxDecoration(
-                color: const Color(0xFF256EFF),
-                borderRadius: BorderRadius.circular(50),
+            child: FractionallySizedBox(
+              widthFactor: 0.5, // highlight mengambil setengah lebar kapsul
+              child: Center(
+                child: Container(
+                  width: 55,
+                  height: 55,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF256EFF),
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                ),
               ),
             ),
           ),
@@ -64,13 +68,21 @@ class CallerBottomNav extends StatelessWidget {
   }
 
   Widget _navIcon(IconData icon, int index) {
+    final bool active = currentIndex == index;
     return GestureDetector(
       onTap: () => onTap(index),
-      child: Center(
-        child: Icon(
-          icon,
-          size: 26,
-          color: currentIndex == index ? Colors.white : const Color(0xFF256EFF),
+      child: SizedBox(
+        width: 70,
+        height: 70,
+        child: Center(
+          child: Transform.translate(
+            offset: const Offset(0, -1.5), // ⭐ icon turun dikit agar center
+            child: Icon(
+              icon,
+              size: 26,
+              color: active ? Colors.white : const Color(0xFF256EFF),
+            ),
+          ),
         ),
       ),
     );

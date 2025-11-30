@@ -32,67 +32,61 @@ class CallerProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
+        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 18),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Profil Petugas",
-              style: TextStyle(
-                fontSize: 25,
-                color: Colors.blue,
-                fontWeight: FontWeight.bold,
+            // ====== TITLE ======
+            const Center(
+              child: Text(
+                "Profil Petugas",
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Color(0xFF256EFF),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            // FOTO + NAMA
-            Column(
-              children: [
-                Stack(
-                  children: [
-                    const CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Color(0xFFE0E7FF),
-                      child: Icon(
-                        Icons.person,
-                        size: 50,
-                        color: Color.fromARGB(255, 64, 100, 220),
-                      ),
-                    ),
-                    //const CircleAvatar(
-                    //radius: 50,
-                    //backgroundImage: AssetImage("assets/profile.jpeg"),
-                    //),
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Container(padding: const EdgeInsets.all(6)),
-                    ),
-                  ],
+            // ====== FOTO PROFIL ======
+            Center(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: const Color(0xFFE0E7FF),
+                child: const Icon(
+                  Icons.person,
+                  size: 50,
+                  color: Color(0xFF4064DC),
                 ),
-              ],
+              ),
             ),
-            const SizedBox(height: 45),
 
-            // MENU PROFIL
-            _menuItem(Icons.person_outline, "Nama", value: nama),
+            const SizedBox(height: 40),
 
-            // Gunakan FutureBuilder untuk ambil nama loket
+            // ====== MENU LIST ======
+            _menuItem(icon: Icons.person_outline, title: "Nama", value: nama),
+
             FutureBuilder<String?>(
               future: getLoketNama(loketID),
               builder: (context, snapshot) {
                 final loketNama = snapshot.data ?? "Tidak ada loket";
-                return _menuItem(Icons.storefront, "Loket", value: loketNama);
+                return _menuItem(
+                  icon: Icons.storefront,
+                  title: "Loket",
+                  value: loketNama,
+                );
               },
             ),
 
-            _menuItem(Icons.email_outlined, "Email", value: email),
+            _menuItem(icon: Icons.email_outlined, title: "Email", value: email),
 
             _menuItem(
-              Icons.logout,
-              "Logout",
+              icon: Icons.logout,
+              title: "Keluar",
+              isAction: true,
               onTap: () {
-                LogoutDialog.show(context); // panggil dialog logout
+                LogoutDialog.show(context);
               },
             ),
           ],
@@ -101,48 +95,70 @@ class CallerProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _menuItem(
-    IconData icon,
-    String title, {
+  // ======================================================
+  //  🔹 MENU ITEM — PAKAI BORDER RADIUS 50 + BACKGROUND BIRU
+  // ======================================================
+  Widget _menuItem({
+    required IconData icon,
+    required String title,
     String? value,
+    bool isAction = false,
     VoidCallback? onTap,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.only(bottom: 20),
       child: InkWell(
+        borderRadius: BorderRadius.circular(50),
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5EDFF),
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: Icon(icon, color: Colors.blue, size: 22),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontSize: 14, color: Colors.black54),
-                  ),
-                  if (value != null)
+        child: Container(
+          height: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF256EFF).withOpacity(0.10),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // ICON
+              Icon(icon, color: const Color(0xFF256EFF), size: 30),
+
+              const SizedBox(width: 20),
+
+              // TEXTS
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      value,
+                      title,
                       style: const TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                ],
+                    if (value != null)
+                      Text(
+                        value!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // // ARROW ICON
+              // Icon(
+              //   Icons.arrow_forward_ios,
+              //   size: 18,
+              //   color: isAction ? Colors.redAccent : Colors.black45,
+              // ),
+            ],
+          ),
         ),
       ),
     );

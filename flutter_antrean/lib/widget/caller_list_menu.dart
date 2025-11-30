@@ -14,7 +14,7 @@ class CallerListMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 10),
+      padding: const EdgeInsets.only(top: 10, bottom: 15),
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -68,7 +68,7 @@ class _TabItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap, // Tangani tap
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? const Color(0xFF256EFF) : Colors.white,
           border: isActive

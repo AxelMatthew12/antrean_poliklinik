@@ -55,7 +55,6 @@ class CustomBottomNav extends StatelessWidget {
               ),
             ),
 
-          
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [

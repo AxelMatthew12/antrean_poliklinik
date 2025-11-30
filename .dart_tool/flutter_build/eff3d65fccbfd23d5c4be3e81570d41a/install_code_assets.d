@@ -1,0 +1,1 @@
+ /Users/faujiiiahhh/Documents/SMT\ 5/MOBILE/antrean_poliklinik/.dart_tool/flutter_build/eff3d65fccbfd23d5c4be3e81570d41a/native_assets.json: 

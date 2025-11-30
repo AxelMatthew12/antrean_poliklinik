@@ -1,0 +1,5 @@
+
+module FirebaseDatabase.Swift {
+  header "FirebaseDatabase-Swift.h"
+  requires objc
+}

@@ -30,9 +30,9 @@ class LogoutDialog {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    "Logout",
+                    "Keluar",
                     style: TextStyle(
-                      color: Colors.blue,
+                      color: const Color(0xFF256EFF),
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                     ),
@@ -41,11 +41,8 @@ class LogoutDialog {
                   const SizedBox(height: 14),
 
                   const Text(
-                    "are you sure you want to log out?",
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.black87,
-                    ),
+                    "Apakah anda yakin ingin keluar?",
+                    style: TextStyle(fontSize: 15, color: Colors.black87),
                     textAlign: TextAlign.center,
                   ),
 
@@ -57,17 +54,18 @@ class LogoutDialog {
                         child: OutlinedButton(
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.blue),
+                            side: const BorderSide(
+                              color: const Color(0xFF256EFF),
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                           child: const Text(
-                            "Cancel",
+                            "Batal",
                             style: TextStyle(
-                              color: Colors.blue,
+                              color: const Color(0xFF256EFF),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -90,15 +88,14 @@ class LogoutDialog {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: const Color(0xFF256EFF),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                           child: const Text(
-                            "Yes, Logout",
+                            "Ya, Keluar",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -108,7 +105,7 @@ class LogoutDialog {
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
