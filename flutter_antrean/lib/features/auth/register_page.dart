@@ -1,3 +1,4 @@
+import 'package:antrean_poliklinik/features/auth/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -140,180 +141,240 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          children: [
+            // =========================
+            // HEADER TETAP / FIX
+            // =========================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+              child: Row(
                 children: [
-                  // HEADER
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back_ios,
-                          color: Color(0xFF2B6BFF),
-                        ),
-                        onPressed: () => Navigator.of(context).maybePop(),
-                      ),
-                      const Expanded(
-                        child: Center(
-                          child: Text(
-                            'Akun Baru',
-                            style: TextStyle(
-                              color: Color(0xFF2B6BFF),
-                              fontSize: 23,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 48),
-                    ],
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Color(0xFF2B6BFF),
+                    ),
+                    onPressed: () => Navigator.of(context).maybePop(),
                   ),
-
-                  const SizedBox(height: 20),
-
-                  // FORM INPUT
-                  buildLabel("Nama Lengkap"),
-                  buildField(
-                    nameController,
-                    "Masukkan Nama Lengkap",
-                    validator: (v) =>
-                        v!.isEmpty ? "Nama tidak boleh kosong" : null,
-                  ),
-                  const SizedBox(height: 20),
-
-                  buildLabel("Password"),
-                  Stack(
-                    alignment: Alignment.centerRight,
-                    children: [
-                      buildPasswordField(),
-                      IconButton(
-                        icon: Icon(
-                          _obscure ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.grey.shade600,
-                        ),
-                        onPressed: _toggleObscure,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  buildLabel("Email"),
-                  buildField(
-                    emailController,
-                    "Masukkan Email",
-                    inputType: TextInputType.emailAddress,
-                    validator: (v) {
-                      if (v!.isEmpty) return "Email tidak boleh kosong";
-                      final emailReg = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-                      if (!emailReg.hasMatch(v)) return "Format email salah";
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  buildLabel("Alamat"),
-                  buildField(
-                    alamatController,
-                    "Masukkan Alamat Lengkap",
-                    validator: (v) => v!.isEmpty ? "Alamat wajib diisi" : null,
-                  ),
-                  const SizedBox(height: 20),
-
-                  buildLabel("NIK"),
-                  buildField(
-                    nikController,
-                    "Masukkan NIK",
-                    inputType: TextInputType.number,
-                    validator: (v) {
-                      if (v!.isEmpty) return "NIK wajib diisi";
-                      if (v.length != 16) return "NIK harus 16 angka";
-                      if (!RegExp(r'^[0-9]+$').hasMatch(v))
-                        return "NIK hanya angka";
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  buildLabel("Nomor Telepon"),
-                  buildField(
-                    phoneController,
-                    "Masukkan Nomor Telepon",
-                    inputType: TextInputType.phone,
-                    validator: (v) {
-                      if (v!.isEmpty) return "Nomor HP wajib diisi";
-                      if (!RegExp(r'^[0-9]+$').hasMatch(v)) {
-                        return "Nomor HP hanya angka";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  buildLabel("Tanggal Lahir"),
-                  buildField(
-                    dobController,
-                    "Masukkan Tanggal Lahir (YYYY-MM-DD)",
-                    validator: (v) {
-                      if (v!.isEmpty) return "Tanggal lahir wajib diisi";
-                      final reg = RegExp(r'^\d{4}-\d{2}-\d{2}$');
-                      if (!reg.hasMatch(v))
-                        return "Format tanggal harus YYYY-MM-DD";
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 30),
-
-                  // BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: register,
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                        elevation: 6,
-                        backgroundColor: const Color(0xFF2B6BFF),
-                      ),
-                      child: const Text(
-                        'Daftar',
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        'Akun Baru',
                         style: TextStyle(
-                          fontSize: 20,
+                          color: Color(0xFF2B6BFF),
+                          fontSize: 23,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
+                  const SizedBox(width: 48),
+                ],
+              ),
+            ),
 
-                  const SizedBox(height: 18),
+            // JARAK ANTARA HEADER DAN FORM
+            const SizedBox(height: 10),
 
-                  // LINK MASUK
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            // =========================
+            // FORM SCROLLABLE
+            // =========================
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Sudah punya Akun? "),
+                        // FORM INPUT
+                        buildLabel("Nama Lengkap"),
+                        buildField(
+                          nameController,
+                          "Masukkan Nama Lengkap",
+                          validator: (v) =>
+                              v!.isEmpty ? "Nama tidak boleh kosong" : null,
+                        ),
+                        const SizedBox(height: 10),
+
+                        buildLabel("Password"),
+                        Stack(
+                          alignment: Alignment.centerRight,
+                          children: [
+                            buildPasswordField(),
+                            IconButton(
+                              icon: Icon(
+                                _obscure
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.grey.shade600,
+                              ),
+                              onPressed: _toggleObscure,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+
+                        buildLabel("Email"),
+                        buildField(
+                          emailController,
+                          "Masukkan Email",
+                          inputType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v!.isEmpty) return "Email tidak boleh kosong";
+                            final emailReg = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+                            if (!emailReg.hasMatch(v))
+                              return "Format email salah";
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
+                        buildLabel("Alamat"),
+                        buildField(
+                          alamatController,
+                          "Masukkan Alamat Lengkap",
+                          validator: (v) =>
+                              v!.isEmpty ? "Alamat wajib diisi" : null,
+                        ),
+                        const SizedBox(height: 10),
+
+                        buildLabel("NIK"),
+                        buildField(
+                          nikController,
+                          "Masukkan NIK",
+                          inputType: TextInputType.number,
+                          validator: (v) {
+                            if (v!.isEmpty) return "NIK wajib diisi";
+                            if (v.length != 16) return "NIK harus 16 angka";
+                            if (!RegExp(r'^[0-9]+$').hasMatch(v))
+                              return "NIK hanya angka";
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
+                        buildLabel("Nomor Telepon"),
+                        buildField(
+                          phoneController,
+                          "Masukkan Nomor Telepon",
+                          inputType: TextInputType.phone,
+                          validator: (v) {
+                            if (v!.isEmpty) return "Nomor HP wajib diisi";
+                            if (!RegExp(r'^[0-9]+$').hasMatch(v)) {
+                              return "Nomor HP hanya angka";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
+                        buildLabel("Tanggal Lahir"),
                         GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Text(
-                            "Masuk",
-                            style: TextStyle(
-                              color: Color(0xFF2B6BFF),
-                              fontWeight: FontWeight.w700,
+                          onTap: pickDate,
+                          child: AbsorbPointer(
+                            child: buildField(
+                              dobController,
+                              "Pilih Tanggal Lahir",
+                              validator: (v) {
+                                if (v!.isEmpty)
+                                  return "Tanggal lahir wajib diisi";
+                                final reg = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+                                if (!reg.hasMatch(v))
+                                  return "Format tanggal tidak valid";
+                                return null;
+                              },
                             ),
                           ),
                         ),
+
+                        const SizedBox(height: 10),
+
+                        // masuk
+                        Center(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                _slideTo(
+                                  const LoginScreen(userType: UserType.Pasien),
+                                ),
+                              );
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Sudah punya akun?',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Masuk',
+                                  style: TextStyle(
+                                    color: Color(0xFF2B6BFF),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // LINK MASUK
+                        // Center(
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.center,
+                        //     children: [
+                        //       const Text("Sudah punya Akun? "),
+                        //       GestureDetector(
+                        //         onTap: () => Navigator.pop(context),
+                        //         child: const Text(
+                        //           "Masuk",
+                        //           style: TextStyle(
+                        //             color: Color(0xFF2B6BFF),
+                        //             fontWeight: FontWeight.w700,
+                        //           ),
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
-                ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 60, right: 60, bottom: 15),
+          child: SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: ElevatedButton(
+              onPressed: register,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2B6BFF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+              child: const Text(
+                'Daftar',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -328,7 +389,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
     );
   }
 
@@ -345,19 +406,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
-        fillColor: const Color(0xFFF0F6FF),
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 18,
+          horizontal: 12,
+          vertical: 12,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(50),
+          borderSide: const BorderSide(color: Color(0xFF256EFF)),
         ),
       ),
     );
   }
 
+  // logic password field
   Widget buildPasswordField() {
     return TextFormField(
       controller: passwordController,
@@ -372,14 +434,89 @@ class _RegisterScreenState extends State<RegisterScreen> {
         filled: true,
         fillColor: const Color(0xFFF0F6FF),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 18,
+          horizontal: 12,
+          vertical: 12,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(50),
+          borderSide: const BorderSide(color: Color(0xFF256EFF)),
         ),
       ),
+    );
+  }
+
+  // function untuk menambahkan pick date kalender
+  Future<void> pickDate() async {
+    DateTime? date = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000, 1, 1),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      helpText: "Pilih Tanggal Lahir",
+      cancelText: "Batal",
+      confirmText: "Pilih",
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF2B6BFF),
+              onPrimary: Colors.white,
+              onSurface: Colors.black87,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (date != null) {
+      setState(() {
+        dobController.text =
+            "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+      });
+    }
+  }
+
+  // ===== FUNGSI TRANSISI SLIDE =====
+  Route _slideTo(Widget page) {
+    return PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 550),
+      reverseTransitionDuration: const Duration(milliseconds: 450),
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // Halaman masuk
+        final slideIn =
+            Tween<Offset>(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutQuart),
+            );
+
+        // Halaman sebelumnya geser keluar
+        final slideOut =
+            Tween<Offset>(
+              begin: Offset.zero,
+              end: const Offset(-0.25, 0.0),
+            ).animate(
+              CurvedAnimation(
+                parent: secondaryAnimation,
+                curve: Curves.easeOutQuart,
+              ),
+            );
+
+        return Stack(
+          children: [
+            SlideTransition(
+              position: slideOut,
+              child: secondaryAnimation.status != AnimationStatus.dismissed
+                  ? child
+                  : const SizedBox(),
+            ),
+            SlideTransition(position: slideIn, child: child),
+          ],
+        );
+      },
     );
   }
 }

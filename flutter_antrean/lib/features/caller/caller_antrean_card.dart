@@ -26,12 +26,11 @@ class CallerAntreanCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.blue, width: 1.4),
+        border: Border.all(color: const Color(0xFF256EFF), width: 1.4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           /// === TOP: Poli + Nomor ===
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,7 +40,7 @@ class CallerAntreanCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: const Color(0xFF256EFF),
                 ),
               ),
               Text(
@@ -49,7 +48,7 @@ class CallerAntreanCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: const Color(0xFF256EFF),
                 ),
               ),
             ],
@@ -62,17 +61,19 @@ class CallerAntreanCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Color(0xFFE0E7FF),
-                  child: Icon(Icons.person,
-                      size: 30,
-                      color: Color.fromARGB(255, 64, 100, 220)),
+                radius: 30,
+                backgroundColor: Color(0xFFE0E7FF),
+                child: Icon(
+                  Icons.person,
+                  size: 30,
+                  color: Color.fromARGB(255, 64, 100, 220),
                 ),
-              //const CircleAvatar(
-                //radius: 32,
-                //backgroundImage: AssetImage("assets/profile/profile.jpeg"),
-              //),
+              ),
 
+              //const CircleAvatar(
+              //radius: 32,
+              //backgroundImage: AssetImage("assets/profile/profile.jpeg"),
+              //),
               const SizedBox(width: 14),
 
               Expanded(
@@ -103,8 +104,8 @@ class CallerAntreanCard extends StatelessWidget {
               ElevatedButton(
                 onPressed: onPressed,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,     // Warna biru
-                  foregroundColor: Colors.white,    // Text putih
+                  backgroundColor: const Color(0xFF256EFF), // Warna biru
+                  foregroundColor: Colors.white, // Text putih
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 22,

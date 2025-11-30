@@ -60,6 +60,8 @@ flutter:
     - assets/images/logo_klik_antri.png
     - assets/images/login_logo.png
     - assets/images/klik_antri.png
+    - assets/images/logo_klik_antri_dark.png
+    - assets/images/logo_klik_antri_light.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

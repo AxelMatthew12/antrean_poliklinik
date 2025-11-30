@@ -1,3 +1,4 @@
+import 'package:antrean_poliklinik/features/auth/greeting_page.dart';
 import 'package:antrean_poliklinik/features/auth/welcome_page.dart';
 import 'package:antrean_poliklinik/features/caller/controllers/caller_controller.dart';
 import 'package:antrean_poliklinik/features/kios/controllers/kios_controller.dart';
@@ -27,9 +28,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
 
-      initialRoute: '/welcome',
+      // initialRoute: '/welcome',
+      initialRoute: '/greeting',
 
       routes: {
+        '/greeting': (_) => const GreetingPage(),
         '/welcome': (_) => const WelcomeScreen(),
         '/login': (_) => const WelcomeScreen(), // kamu boleh samakan
       },

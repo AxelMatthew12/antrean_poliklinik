@@ -26,7 +26,7 @@ class CallerListMenu extends StatelessWidget {
               onTap: () => onTabChanged("Menunggu"),
             ),
 
-            const SizedBox(width: 10),
+            const SizedBox(width: 15),
 
             // Tab "Berjalan"
             _TabItem(
@@ -35,7 +35,7 @@ class CallerListMenu extends StatelessWidget {
               onTap: () => onTabChanged("Berjalan"),
             ),
 
-            const SizedBox(width: 10),
+            const SizedBox(width: 15),
 
             // Tab "Selesai"
             _TabItem(
@@ -70,10 +70,11 @@ class _TabItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive
-              ? Colors.blue
-              : const Color(0xFFE6EDFF), // Warna aktif/inaktif
-          borderRadius: BorderRadius.circular(20),
+          color: isActive ? const Color(0xFF256EFF) : Colors.white,
+          border: isActive
+              ? Border.all(color: const Color(0xFF256EFF), width: 1)
+              : Border.all(color: const Color(0xFF256EFF), width: 1),
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Text(
           title,
