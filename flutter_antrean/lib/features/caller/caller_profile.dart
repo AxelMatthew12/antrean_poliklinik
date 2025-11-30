@@ -83,7 +83,7 @@ class CallerProfilePage extends StatelessWidget {
 
             _menuItem(
               icon: Icons.logout,
-              title: "Logout",
+              title: "Keluar",
               isAction: true,
               onTap: () {
                 LogoutDialog.show(context);

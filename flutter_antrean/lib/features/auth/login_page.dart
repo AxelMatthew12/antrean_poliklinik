@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
     bool isSuccess = title.toLowerCase().contains("berhasil");
 
     IconData icon = isSuccess ? Icons.check_circle : Icons.error;
-    Color iconColor = isSuccess ? Colors.blue : Colors.red;
+    Color iconColor = isSuccess ? Color(0xFF2B6BFF) : Colors.red;
 
     return showDialog(
       context: context,
@@ -49,7 +49,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isSuccess ? Colors.blue.shade700 : Colors.red.shade700,
+                  color: isSuccess
+                      ? const Color(0xFF1E40AF)
+                      : Colors.red.shade700,
                 ),
               ),
 
@@ -68,12 +70,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isSuccess ? Colors.blue : Colors.red,
+                    backgroundColor: isSuccess ? Color(0xFF2B6BFF) : Colors.red,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(50),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 20,
+                    ),
                   ),
                   child: const Text(
                     "OK",

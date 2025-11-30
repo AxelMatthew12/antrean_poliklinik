@@ -2,17 +2,12 @@ import 'package:flutter/material.dart';
 
 class SlideGestureWrapper extends StatefulWidget {
   final Widget child;
-  final Duration duration;
-
-  /// true = slide to left (content moves to left)
-  /// false = slide to right
   final bool slideToLeft;
 
   const SlideGestureWrapper({
     super.key,
     required this.child,
     required this.slideToLeft,
-    this.duration = const Duration(milliseconds: 350),
   });
 
   @override
@@ -27,28 +22,30 @@ class _SlideGestureWrapperState extends State<SlideGestureWrapper>
   @override
   void initState() {
     super.initState();
-    _initAnimation();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180), // lebih cepat, lebih halus
+    );
+
+    _animation =
+        Tween<Offset>(
+          begin: Offset(widget.slideToLeft ? 0.15 : -0.15, 0), // cuma 15% geser
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Curves.easeOutCubic, // animasi sangat halus
+          ),
+        );
+
+    _controller.forward();
   }
 
   @override
-  void didUpdateWidget(covariant SlideGestureWrapper oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // jika arah berubah maka setup ulang animasi
-    if (oldWidget.slideToLeft != widget.slideToLeft) {
-      _initAnimation();
-    }
-  }
-
-  void _initAnimation() {
-    _controller = AnimationController(vsync: this, duration: widget.duration);
-
-    _animation = Tween<Offset>(
-      begin: Offset.zero,
-      end: widget.slideToLeft ? const Offset(-1, 0) : const Offset(1, 0),
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-
-    _controller.forward(from: 0); // jalankan animasi
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

@@ -35,18 +35,22 @@ class CallerBottomNav extends StatelessWidget {
         children: [
           // Animasi Highlight
           AnimatedAlign(
-            duration: const Duration(milliseconds: 280),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutQuad,
             alignment: currentIndex == 0
                 ? Alignment.centerLeft
                 : Alignment.centerRight,
-            child: Container(
-              width: (MediaQuery.of(context).size.width - 140) / 2 - 65,
-              margin: const EdgeInsets.symmetric(horizontal: 28),
-              height: 55,
-              decoration: BoxDecoration(
-                color: const Color(0xFF256EFF),
-                borderRadius: BorderRadius.circular(50),
+            child: FractionallySizedBox(
+              widthFactor: 0.5, // highlight mengambil setengah lebar kapsul
+              child: Center(
+                child: Container(
+                  width: 55,
+                  height: 55,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF256EFF),
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                ),
               ),
             ),
           ),
