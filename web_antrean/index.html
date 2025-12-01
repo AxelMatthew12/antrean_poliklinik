@@ -1,11 +1,403 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Display Antrian - Klik Antri</title>
+
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+    /* Variabel Warna */
+    :root {
+        --primary-color: #2260FF; 
+        --secondary-color: #0048bd; 
+        --text-color: #212529; 
+        --light-bg: #f8f9fa; 
+        --white: #ffffff;
+    }
+
+    html, body {
+        height: 100%; 
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: "League Spartan", sans-serif;
+        background: var(--light-bg);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: row; /* Konten utama dan sidebar bersebelahan */
+    }
+
+    /* ===================
+        SIDEBAR
+    ======================*/
+    aside {
+        width: 250px;
+        height: 100vh;
+        background: linear-gradient(150deg, var(--secondary-color), var(--primary-color));
+        color: var(--white);
+        padding-left: 20px;
+        position: fixed;
+        transition: 0.3s;
+        overflow: hidden;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.15);
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    aside.collapsed {
+        width: 80px;
+        padding-left: 0px; 
+    }
+
+    aside .menu-header {
+        margin: 0;
+        padding: 40px 0 20px 20px;
+        font-size: 24px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        margin-right: 20px;
+    }
+
+    aside.collapsed .menu-header { display: none; }
+    .menu-content { flex-grow: 1; }
+
+    aside a {
+        font-size: 17px;
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 10px;
+        margin: 8px 0;
+        text-decoration: none;
+        transition: 0.25s;
+        white-space: nowrap;
+        border-radius: 10px 0 0 10px;
+        padding-left: 20px;
+    }
+
+    aside.collapsed a {
+        padding-left: 0px; 
+        justify-content: center;
+    }
+
+    aside a:hover, aside a.active {
+        background: var(--white);
+        color: var(--primary-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        padding-left: 30px; 
+        transform: translateX(0px); /* Hapus pergeseran X saat hover agar lebih halus */
+    }
+    
+    aside.collapsed a span.menu-text { display: none; }
+    aside a i { font-size: 22px; width: 30px; text-align: center; }
+
+    /* TOGGLE BUTTON */
+    #toggleBtn {
+        width: 100%;
+        height: 60px;
+        background: rgba(0, 0, 0, 0.15);
+        border: none;
+        color: var(--white);
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.3s;
+        margin-top: 15px; 
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    #toggleBtn i { transition: transform 0.3s; }
+    #toggleBtn:hover { background: rgba(0, 0, 0, 0.3); }
+    aside.collapsed #toggleBtn i { transform: rotate(180deg); }
+
+    /* ===========================
+        MAIN CONTENT 
+    ============================*/
+    .main-content {
+        margin-left: 270px; 
+        width: 100%;
+        transition: 0.3s;
+        padding: 0 20px;
+        
+        /* Flexbox untuk Main Content */
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh; /* menampung semua konten secara vertikal */
+    }
+
+    aside.collapsed ~ .main-content {
+        margin-left: 100px;
+    }
+
+    header {
+        width: 100%;
+        background: var(--white);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 3px solid var(--primary-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .logo-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding-left: 30px;
+    }
+    .logo-img { width: 60px; height: 60px; object-fit: contain; }
+    .klik-antri { font-size: 48px; font-weight: 5; color: var(--primary-color); line-height: 1; }
+    .sub-text { font-size: 20px; font-weight: 800; color: var(--primary-color); display: block; }
+    .time-box { background: var(--primary-color); color: var(--white); padding: 12px 25px; border-radius: 15px; text-align: center; font-weight: 600; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    #time { font-size: 30px; font-weight: 800; display: block; }
+    #date { font-size: 16px; display: block; }
+
+    /* CONTAINER UTAMA */
+    .container {
+        display: flex;
+        padding: 30px 0; 
+        gap: 30px;
+        flex-grow: 1; /* mengambil sisa ruang vertikal yang tersedia */
+        align-items: stretch; /* memastikan main-box dan grid setinggi mungkin */
+    }
+
+    /* Kotak Utama Antrian */
+    .main-box {
+        flex: 0 0 350px; 
+        background: var(--primary-color);
+        color: var(--white);
+        padding: 30px 40px;
+        border-radius: 30px;
+        box-shadow: 0 10px 25px rgba(37, 110, 255, 0.4);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .main-box .title { font-size: 30px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+    .main-number { font-size: 180px; font-weight: 900; line-height: 1; margin: 20px 0; text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3); }
+
+    /* Grid Antrian Selanjutnya */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        flex: 1;
+        align-content: stretch; 
+        grid-auto-rows: 1fr; /* semua baris memiliki ketinggian yang sama */
+    }
+    
+    .small-box {
+        background: var(--white);
+        border: 2px solid var(--primary-color);
+        border-radius: 20px;
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.2s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        justify-content: center; 
+    }
+    .small-box:hover { transform: none; box-shadow: 0 6px 15px rgba(0,0,0,0.15); } 
+    .small-title { font-size: 18px; font-weight: 600; color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase; }
+    .small-number { font-size: 50px; font-weight: 800; color: var(--primary-color); margin: 10px 0; min-height: 50px; }
+    .small-box > div:last-child { font-size: 16px; font-weight: 500; color:  var(--primary-color); text-transform: uppercase; }
+
+    /* Footer */
+    footer {
+        background: var(--primary-color);
+        color: var(--white);
+        padding: 25px;
+        text-align: center;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        border-radius: 15px;
+        margin-top: auto; /* mendorong footer ke bawah */
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 20px; /* jarak dari bawah viewport */
+    }
+
+    /* ===========================
+        MEDIA QUERIES (Responsif)
+    ============================*/
+    @media (max-width: 1200px) {
+        .grid {
+            grid-template-columns: repeat(2, 1fr); /* 2 kolom untuk layar menengah */
+        }
+    }
+
+    @media (max-width: 900px) {
+        /* susunan Main Box dan Grid menjadi vertikal */
+        .container {
+            flex-direction: column;
+        }
+        
+        .main-box {
+            flex: 1 1 auto; /* ambil lebar penuh */
+            max-width: 100%;
+        }
+        
+        .main-number {
+            font-size: 140px; /* ukuran font disesuaikan */
+        }
+
+        .grid {
+            grid-template-columns: repeat(3, 1fr); 
+        }
+
+        aside {
+            width: 80px;
+            padding-left: 0;
+        }
+        .main-content {
+            margin-left: 100px;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .grid {
+            grid-template-columns: 1fr; 
+        }
+        .logo-title {
+            padding-left: 10px;
+        }
+        .klik-antri {
+            font-size: 30px;
+        }
+        #time {
+            font-size: 24px;
+        }
+        footer {
+            font-size: 18px;
+        }
+    }
+</style>
 </head>
+
 <body>
-    <h1>Hello World</h1>
+
+<aside id="sidebar" class="collapsed"> <div class="menu-content">
+        <p class="menu-header">MENU</p>
+
+        <a href="#" class="active">
+            <i class="fas fa-desktop"></i>
+            <span class="menu-text">Display</span>
+        </a>
+        <a href="#"><i class="fas fa-hospital"></i><span class="menu-text">Poli</span></a>
+        <a href="#"><i class="fas fa-user-tie"></i><span class="menu-text">Petugas</span></a>
+        <a href="#"><i class="fas fa-cog"></i><span class="menu-text">Pengaturan</span></a>
+    </div>
+
+    <div id="toggleBtn">
+        <i class="fas fa-chevron-left"></i>
+    </div>
+</aside>
+
+<div class="main-content">
+
+<header>
+    <div class="logo-title">
+        <img src="images/logo.png" class="logo-img" alt="Logo Klik Antri">
+        <div>
+            <span class="klik-antri">Klik Antri</span>
+            <span class="sub-text">Hospital Queue Application</span>
+        </div>
+    </div>
+
+    <div class="time-box">
+        <span id="time">00:00:00</span>
+        <span id="date">1 Januari 2025</span>
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="main-box">
+        <div class="title">NOMOR PANGGILAN</div>
+        <div class="main-number" id="mainNumber">A026</div> 
+        <div class="title">LOKET 1</div>
+    </div>
+
+    <div class="grid">
+        <div class="small-box">
+            <div class="small-title">ANTRIAN SELANJUTNYA</div>
+            <div class="small-number">A027</div>
+            <div>LOKET 1</div>
+        </div>
+
+        <div class="small-box">
+            <div class="small-title">ANTRIAN SELANJUTNYA</div>
+            <div class="small-number">B005</div>
+            <div>LOKET 2</div>
+        </div>
+        
+        <div class="small-box">
+            <div class="small-title">ANTRIAN SELANJUTNYA</div>
+            <div class="small-number">C012</div>
+            <div>LOKET 3</div>
+        </div>
+
+        <div class="small-box">
+            <div class="small-title">ANTRIAN SELANJUTNYA</div>
+            <div class="small-number">A028</div>
+            <div>LOKET 1</div>
+        </div>
+        <div class="small-box">
+            <div class="small-title">ANTRIAN SELANJUTNYA</div>
+            <div class="small-number">B006</div>
+            <div>LOKET 2</div>
+        </div>
+        <div class="small-box">
+            <div class="small-title">ANTRIAN SELANJUTNYA</div>
+            <div class="small-number">C013</div>
+            <div>LOKET 3</div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    HARAP ANTRIAN SELANJUTNYA MEMPERSIAPKAN DIRI DI DEPAN LOKET YANG BERSANGKUTAN
+</footer>
+
+</div>
+
+<script>
+document.getElementById("toggleBtn").addEventListener("click", () => {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("collapsed");
+});
+
+function updateTime() {
+    const now = new Date();
+    document.getElementById("time").innerText = now.toLocaleTimeString("id-ID", { hour12: false });
+    document.getElementById("date").innerText = now.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+}
+setInterval(updateTime, 1000);
+updateTime();
+</script>
+
 </body>
 </html>
