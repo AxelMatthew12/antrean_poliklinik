@@ -1,11 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Petugas</h1>
-</body>
-</html>
+<h1 class="page-title">Manajemen Petugas</h1>
+
+<button id="btnAdd" class="btn-primary" style="text-align:left;">+ Tambah Petugas</button>
+
+<div class="container" style="padding:10px; box-shadow:var(--shadow); background:white; border-radius:var(--radius); margin-top:15px;">
+
+    <!-- ==========================
+         MODAL FORM TAMBAH / EDIT
+    =========================== -->
+    <div id="modalForm" class="modal">
+        <div class="modal-content form-modern">
+
+            <div class="modal-header">
+                <h2 id="formTitle">Tambah Petugas</h2>
+            </div>
+
+            <div class="form-group">
+                <label for="petugasNama">Nama Petugas</label>
+                <input type="text" id="petugasNama" class="input-modern" placeholder="Masukkan Nama Petugas">
+            </div>
+
+            <div class="form-group">
+                <label for="petugasEmail">Email</label>
+                <input type="email" id="petugasEmail" class="input-modern" placeholder="Masukkan Email">
+            </div>
+
+            <div class="form-group">
+                <label for="petugasPassword">Password</label>
+                <input type="password" id="petugasPassword" class="input-modern" placeholder="Masukkan Password">
+            </div>
+
+            <div class="form-group">
+                <label for="petugasLoket">Loket</label>
+                <select id="petugasLoket" class="input-modern">
+                    <option value="">-- Pilih Loket --</option>
+                    <option value="LKTO1">Loket 1</option>
+                    <option value="LKTO2">Loket 2</option>
+                    <option value="LKTO3">Loket 3</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button id="btnSave" class="btn-primary full">Simpan</button>
+                <button id="btnCancel" class="btn-secondary full">Batal</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==========================
+         MODAL DELETE
+    =========================== -->
+    <div id="modalDelete" class="modal">
+        <div class="modal-content">
+            <h3>Konfirmasi Hapus</h3>
+            <p>Yakin ingin menghapus petugas ini?</p>
+
+            <div class="modal-actions">
+                <button id="btnDeleteOk" class="btn-danger">Hapus</button>
+                <button id="btnDeleteCancel" class="btn-secondary">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================
+         TABEL DATA
+    =========================== -->
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>UID</th>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>ID Loket</th>
+                <th style="text-align:center;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="petugasTableBody"></tbody>
+    </table>
+
+</div>

@@ -71,6 +71,12 @@ function loadPage(pageName) {
           import("./poli.js");
         }
       }
+      // Jika halaman petugas diload → load petugas.js
+      if (pageName === "petugas") {
+        if (pageName === "petugas") {
+          import("./petugas.js");
+        }
+      }
     })
     .catch((err) => {
       target.innerHTML = `<p style="padding:20px; color:red;">
