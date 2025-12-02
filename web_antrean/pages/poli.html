@@ -1,11 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>POLI</h1>
-</body>
-</html>
+<h1 class="page-title">Manajemen Poli</h1>
+
+<button id="btnAdd" class="btn-primary" style="text-align: left;">+ Tambah Poli</button>
+
+<!-- ==========================
+     MODERN MODAL FORM (CREATE/EDIT)
+=========================== -->
+<div class="container" style="padding: 10px; box-shadow: var(--shadow); background: white; border-radius: var(--radius); margin-top: 15px;">
+
+    <div id="modalForm" class="modal">
+        <div class="modal-content form-modern">
+            
+            <div class="modal-header">
+                <h2 id="formTitle">Tambah Poli</h2>
+                <!-- <button id="btnCloseModal" class="close-btn">&times;</button> -->
+            </div>
+            
+            <div class="form-group">
+                <label for="poliId">ID Poli</label>
+                <input type="text" id="poliId" class="input-modern" placeholder="Contoh: POLI01">
+            </div>
+            
+            <div class="form-group">
+                <label for="poliNama">Nama Poli</label>
+                <input type="text" id="poliNama" class="input-modern" placeholder="Contoh: Poli Umum">
+            </div>
+            
+            <div class="form-group">
+                <label for="poliDeskripsi">Deskripsi</label>
+                <textarea id="poliDeskripsi" class="input-modern textarea-modern" placeholder="Tuliskan deskripsi poli..."></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="btnSave" class="btn-primary full">Simpan</button>
+                <button id="btnCancel" class="btn-secondary full">Batal</button>
+            </div>
+            
+        </div>
+    </div>
+    
+    
+    <!-- ==========================
+    MODAL DELETE CONFIRMATION 
+    =========================== -->
+    <div id="modalDelete" class="modal">
+        <div class="modal-content">
+            <h3>Konfirmasi Hapus</h3>
+            <p>Yakin ingin menghapus poli ini?</p>
+            
+            <div class="modal-actions">
+                <button id="btnDeleteOk" class="btn-danger">Hapus</button>
+                <button id="btnDeleteCancel" class="btn-secondary">Batal</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ==========================
+    TABEL DATA
+    =========================== -->
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nama Poli</th>
+                <th>Deskripsi</th>
+                <th style="text-align:center;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="poliTableBody"></tbody>
+    </table>
+</div>
+    
