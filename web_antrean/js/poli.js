@@ -1,4 +1,7 @@
-// Import Firebase
+// ======================================================
+// Import Supabase + Firebase
+// ======================================================
+import { supabase } from "./supabasse_configure.js";
 import { db } from "./firebase_configure.js";
 import {
   ref,
@@ -8,20 +11,23 @@ import {
   remove,
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
+// ======================================================
+// GLOBAL STATE
+// ======================================================
 let isEdit = false;
 let editKey = "";
+let existingImage = null;
+let deleteKey = "";
 
-// Tunggu halaman poli.html selesai dimuat
-// document.addEventListener("DOMContentLoaded", () => {
-//     loadPoliData();
-//     setupEvents();
-// });
+// ======================================================
+// INIT
+// ======================================================
 loadPoliData();
 setupEvents();
 
-// ================================
-// LOAD DATA POLI
-// ================================
+// ======================================================
+// LOAD DATA ke TABEL
+// ======================================================
 function loadPoliData() {
   const tableBody = document.getElementById("poliTableBody");
   const layananRef = ref(db, "layanan");
@@ -39,37 +45,38 @@ function loadPoliData() {
       const data = child.val();
 
       tableBody.innerHTML += `
-                <tr>
-                    <td>${data.id}</td>
-                    <td>${data.nama}</td>
-                    <td>${data.deskripsi}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-success" onclick="editPoli('${key}')">Edit</button>
-                            <button class="btn-danger" onclick="deletePoli('${key}')">Hapus</button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+        <tr>
+          <td>${data.id}</td>
+          <td>${data.nama}</td>
+          <td style="text-align:center">
+            ${
+              data.gambar
+                ? `<img src="${data.gambar}" style="width:80px; height:80px; object-fit:cover; border-radius:10px;" />`
+                : `<span style="color:#aaa">Tidak ada gambar</span>`
+            }
+          </td>
+          <td>${data.deskripsi}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-success" onclick="editPoli('${key}')">Edit</button>
+              <button class="btn-danger" onclick="deletePoli('${key}')">Hapus</button>
+            </div>
+          </td>
+        </tr>
+      `;
     });
   });
 }
 
-// ======== SEMUA MODAL ========
-const modalForm = document.getElementById("modalForm");
-const modalDelete = document.getElementById("modalDelete");
-
-isEdit = false;
-editKey = null;
-let deleteKey = null;
-
-// =============================
-// EVENT HANDLER
-// =============================
+// ======================================================
+// SETUP MODAL EVENTS
+// ======================================================
 function setupEvents() {
-  // OPEN ADD MODAL
   document.getElementById("btnAdd").onclick = () => {
     isEdit = false;
+    editKey = "";
+    existingImage = null;
+
     modalForm.style.display = "flex";
     document.getElementById("formTitle").innerText = "Tambah Poli";
 
@@ -77,43 +84,75 @@ function setupEvents() {
     document.getElementById("poliId").value = "";
     document.getElementById("poliNama").value = "";
     document.getElementById("poliDeskripsi").value = "";
+    document.getElementById("imageInput").value = "";
+    document.getElementById("previewImage").style.display = "none";
   };
 
-  // SAVE
   document.getElementById("btnSave").onclick = savePoli;
+  document.getElementById("btnCancel").onclick = () =>
+    (modalForm.style.display = "none");
 
-  // CANCEL FORM
-  document.getElementById("btnCancel").onclick = () => {
-    modalForm.style.display = "none";
-  };
+  document.getElementById("btnDeleteCancel").onclick = () =>
+    (modalDelete.style.display = "none");
 
-  // CANCEL DELETE
-  document.getElementById("btnDeleteCancel").onclick = () => {
-    modalDelete.style.display = "none";
-  };
-
-  // CONFIRM DELETE
   document.getElementById("btnDeleteOk").onclick = () => {
-    const poliRef = ref(db, "layanan/" + deleteKey);
-    remove(poliRef);
+    remove(ref(db, "layanan/" + deleteKey));
     modalDelete.style.display = "none";
   };
 }
 
-// =============================
-// SAVE POLI
-// =============================
-function savePoli() {
-  const id = document.getElementById("poliId").value;
-  const nama = document.getElementById("poliNama").value;
-  const deskripsi = document.getElementById("poliDeskripsi").value;
+// ======================================================
+// UPLOAD IMAGE to SUPABASE
+// ======================================================
+async function uploadImage() {
+  const file = document.getElementById("imageInput").files[0];
+  if (!file) return null;
+
+  const fileName = `${Date.now()}_${file.name}`;
+
+  const { error } = await supabase.storage
+    .from("images_poli")
+    .upload(fileName, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (error) {
+    console.error("Upload gagal:", error);
+    alert("Gagal upload gambar.");
+    return null;
+  }
+
+  const { data: urlData } = supabase.storage
+    .from("images_poli")
+    .getPublicUrl(fileName);
+
+  return urlData.publicUrl;
+}
+
+// ======================================================
+// SAVE / UPDATE DATA POLI
+// ======================================================
+async function savePoli() {
+  const id = document.getElementById("poliId").value.trim();
+  const nama = document.getElementById("poliNama").value.trim();
+  const deskripsi = document.getElementById("poliDeskripsi").value.trim();
 
   if (!id || !nama) {
     alert("ID dan Nama wajib diisi!");
     return;
   }
 
-  const data = { id, nama, deskripsi };
+  // Upload gambar jika user memilih file baru
+  let imageUrl = existingImage;
+  const newFile = document.getElementById("imageInput").files[0];
+
+  if (newFile) {
+    const uploadedUrl = await uploadImage();
+    if (uploadedUrl) imageUrl = uploadedUrl;
+  }
+
+  const data = { id, nama, deskripsi, gambar: imageUrl };
 
   if (isEdit) {
     update(ref(db, "layanan/" + editKey), data);
@@ -124,9 +163,9 @@ function savePoli() {
   modalForm.style.display = "none";
 }
 
-// =============================
-// EDIT
-// =============================
+// ======================================================
+// EDIT POLI
+// ======================================================
 window.editPoli = (key) => {
   isEdit = true;
   editKey = key;
@@ -138,17 +177,26 @@ window.editPoli = (key) => {
     ref(db, "layanan/" + key),
     (snap) => {
       const p = snap.val();
+
       document.getElementById("poliId").value = p.id;
       document.getElementById("poliNama").value = p.nama;
       document.getElementById("poliDeskripsi").value = p.deskripsi;
+
+      existingImage = p.gambar || null;
+
+      if (existingImage) {
+        const preview = document.getElementById("previewImage");
+        preview.src = existingImage;
+        preview.style.display = "block";
+      }
     },
     { onlyOnce: true }
   );
 };
 
-// =============================
-// DELETE (open modal)
-// =============================
+// ======================================================
+// DELETE POLI (open modal)
+// ======================================================
 window.deletePoli = (key) => {
   deleteKey = key;
   modalDelete.style.display = "flex";
