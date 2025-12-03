@@ -55,12 +55,13 @@ class CustomBottomNav extends StatelessWidget {
               ),
             ),
 
+            // 🔵 ICONS (HOME — CALENDAR — PROFILE)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _icon(Icons.home, 0),
-                _icon(Icons.person_outline, 1),
-                _icon(Icons.calendar_today, 2),
+                _icon(Icons.home, 0),              // kiri
+                _icon(Icons.calendar_today, 1),    // tengah
+                _icon(Icons.person_outline, 2),    // kanan
               ],
             ),
           ],
@@ -79,7 +80,7 @@ class CustomBottomNav extends StatelessWidget {
         height: 70,
         child: Center(
           child: Transform.translate(
-            offset: const Offset(0, -1.5), // ⭐ icon turun dikit agar center
+            offset: const Offset(0, -1.5),
             child: Icon(
               icon,
               size: 26,

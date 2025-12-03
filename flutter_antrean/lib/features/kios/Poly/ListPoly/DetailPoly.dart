@@ -25,7 +25,6 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
   Future<void> loadRealData() async {
     final db = FirebaseDatabase.instance.ref();
 
-    // --- Ambil data LOKET berdasarkan layanan_id (poli.id)
     final snapshotLoket = await db.child("loket").get();
 
     for (var loket in snapshotLoket.children) {
@@ -37,10 +36,8 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
           statusLoket = data["status"] ?? "-";
         });
 
-        // --- Ambil nama PETUGAS berdasarkan petugas_id
         String petugasId = data["petugas_id"];
-        final petugasSnap =
-            await db.child("petugas").child(petugasId).get();
+        final petugasSnap = await db.child("petugas").child(petugasId).get();
 
         if (petugasSnap.exists) {
           final petugasData = petugasSnap.value as Map;
@@ -106,7 +103,6 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
         "status": "menunggu",
       });
 
-      // Popup sukses
       showDialog(
         context: context,
         builder: (_) => Dialog(
@@ -184,9 +180,7 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         child: Column(
           children: [
-            // =====================================================
-            // 🔵 BLUE HEADER CARD
-            // =====================================================
+            // 🔵 BLUE HEADER CARD (Dengan gambar)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -196,9 +190,37 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.medical_services,
-                      size: 60, color: Colors.white),
+                  // ==== GAMBAR POLI ====
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.network(
+                      widget.poli.gambar,
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, err, stack) => const Icon(
+                        Icons.broken_image,
+                        size: 40,
+                        color: Colors.white,
+                      ),
+                      loadingBuilder: (context, child, loading) {
+                        if (loading == null) return child;
+                        return const SizedBox(
+                          width: 70,
+                          height: 70,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
                   const SizedBox(width: 16),
+
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,13 +233,7 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          widget.poli.deskripsi,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.85),
-                            fontSize: 14,
-                          ),
-                        ),
+
                       ],
                     ),
                   ),
@@ -228,7 +244,7 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
             const SizedBox(height: 22),
 
             // =====================================================
-            // 🔵 DETAIL CARD
+            // DETAIL CARD
             // =====================================================
             Container(
               width: double.infinity,
@@ -265,7 +281,7 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
             const SizedBox(height: 32),
 
             // =====================================================
-            // 🔵 BUTTON
+            // BUTTON
             // =====================================================
             SizedBox(
               width: double.infinity,

@@ -222,23 +222,11 @@ class _GreetingPageState extends State<GreetingPage>
             ).animate(
               CurvedAnimation(parent: animation, curve: Curves.easeOutQuart),
             );
-
-        final slideOut =
-            Tween<Offset>(
-              begin: Offset.zero,
-              end: const Offset(-0.25, 0),
-            ).animate(
-              CurvedAnimation(
-                parent: secondaryAnimation,
-                curve: Curves.easeOutQuart,
-              ),
+        return SlideTransition(
+          position: slideIn,
+          child: child,
             );
-
-return SlideTransition(
-  position: slideIn,
-  child: child,
-);
-      },
-    );
-  }
-}
+          },
+        );
+       }
+    }

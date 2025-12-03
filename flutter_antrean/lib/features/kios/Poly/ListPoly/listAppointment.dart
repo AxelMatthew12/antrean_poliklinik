@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:antrean_poliklinik/widget/kiosListMenu.dart'; // Ensure the import is correct
+import 'package:antrean_poliklinik/widget/kiosListMenu.dart';
 import 'package:antrean_poliklinik/features/kios/Poly/ListPoly/DetailPoly.dart';
 import 'package:antrean_poliklinik/features/kios/Poly/Queue/AntreanPage.dart';
 import 'package:antrean_poliklinik/features/kios/Poly/HistoryPage.dart';
@@ -24,22 +24,41 @@ class PoliCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // =======================
+          //  FOTO POLI
+          // =======================
           Container(
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: const Color(0xFF6FA8FF),
               borderRadius: BorderRadius.circular(16),
+              color: Colors.grey.shade200,
             ),
-            child: const Icon(
-              Icons.local_hospital_rounded,
-              size: 42,
-              color: Colors.white,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                poli.gambar,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.broken_image,
+                  size: 32,
+                  color: Colors.grey,
+                ),
+                loadingBuilder: (context, child, loading) {
+                  if (loading == null) return child;
+                  return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  );
+                },
+              ),
             ),
           ),
 
           const SizedBox(width: 16),
 
+          // ================================
+          //  TEXT & BUTTON
+          // ================================
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,13 +74,15 @@ class PoliCard extends StatelessWidget {
 
                 const SizedBox(height: 6),
 
-                Text(
-                  poli.deskripsi,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                  ),
-                ),
+Text(
+  poli.deskripsi.length > 70
+      ? poli.deskripsi.substring(0, 70) + "..."
+      : poli.deskripsi,
+  style: const TextStyle(
+    fontSize: 14,
+    color: Colors.black87,
+  ),
+),
 
                 const SizedBox(height: 14),
 
@@ -106,9 +127,7 @@ class PoliCard extends StatelessWidget {
   }
 }
 
-
-
-// ================= KiosListAntrean Widget =================
+// ================= KiosListAntrean =================
 class KiosListAntrean extends StatefulWidget {
   final Map? userData;
 
@@ -120,7 +139,7 @@ class KiosListAntrean extends StatefulWidget {
 
 class _KiosListAntreanState extends State<KiosListAntrean> {
   late DatabaseReference layananRef;
-  String _activeTab = "List Poli"; // Default active tab
+  String _activeTab = "List Poli";
 
   @override
   void initState() {
@@ -135,19 +154,17 @@ class _KiosListAntreanState extends State<KiosListAntrean> {
     layananRef = db.ref("layanan");
   }
 
-Widget _buildTabContent() {
-  if (_activeTab == "List Poli") {
-    return _buildPoliList();
-  } else if (_activeTab == "Antrean") {
-    return const AntreanPage(); // Halaman antrean
-  } else if (_activeTab == "Riwayat") {
-    return const HistoryPage(); // Halaman riwayat
-  } else {
+  Widget _buildTabContent() {
+    if (_activeTab == "List Poli") {
+      return _buildPoliList();
+    } else if (_activeTab == "Antrean") {
+      return const AntreanPage();
+    } else if (_activeTab == "Riwayat") {
+      return const HistoryPage();
+    }
     return const SizedBox();
   }
-}
 
-  // Fetch and display List Poli from Firebase
   Widget _buildPoliList() {
     return StreamBuilder(
       stream: layananRef.onValue,
@@ -162,13 +179,17 @@ Widget _buildTabContent() {
           return const Center(child: Text("Tidak ada data layanan."));
         }
 
+        // FIX: mapping data Firebase
         final poliMap = Map<String, dynamic>.from(data as Map);
+
         final poliList = poliMap.entries.map((e) {
           final value = Map<String, dynamic>.from(e.value);
+
           return PoliModel(
             id: value["id"],
             nama: value["nama"],
             deskripsi: value["deskripsi"],
+            gambar: value["gambar"],
           );
         }).toList();
 
@@ -177,8 +198,8 @@ Widget _buildTabContent() {
           itemCount: poliList.length,
           itemBuilder: (context, index) {
             return PoliCard(
-              poli: poliList[index], // pass PoliModel
-              userData: widget.userData, // pass userData
+              poli: poliList[index],
+              userData: widget.userData,
             );
           },
         );
@@ -186,34 +207,27 @@ Widget _buildTabContent() {
     );
   }
 
-// Appointment placeholder
-Widget _buildAppointmentList() {
-  return AntreanPage(); // Memanggil widget AppointmentPage()
-}
-
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         children: [
           _buildHeader(),
-          KiosListMenu( // Here we use the kiosListMenu widget for dynamic tab switching
-            activeTab: _activeTab, // Pass active tab value
+          KiosListMenu(
+            activeTab: _activeTab,
             onTabChanged: (tab) {
               setState(() {
-                _activeTab = tab; // Update active tab
+                _activeTab = tab;
               });
             },
           ),
           const SizedBox(height: 10),
-          Expanded(child: _buildTabContent()), // Show content based on active tab
+          Expanded(child: _buildTabContent()),
         ],
       ),
     );
   }
 
-  // Header with title
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -222,7 +236,8 @@ Widget _buildAppointmentList() {
           Spacer(),
           Text(
             "Pemeriksaan Pasien",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue),
+            style: TextStyle(
+                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue),
           ),
           Spacer(),
         ],
@@ -236,10 +251,12 @@ class PoliModel {
   final String id;
   final String nama;
   final String deskripsi;
+  final String gambar;
 
   PoliModel({
     required this.id,
     required this.nama,
     required this.deskripsi,
+    required this.gambar,
   });
 }

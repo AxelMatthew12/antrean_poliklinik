@@ -32,9 +32,6 @@ class _HomePageState extends State<HomePage> {
     _loadRecentHistory();
   }
 
-  // =============================================================
-  // 🔵 LOAD 3 RIWAYAT TERBARU (status = selesai)
-  // =============================================================
   Future<void> _loadRecentHistory() async {
   try {
     final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -104,10 +101,11 @@ class _HomePageState extends State<HomePage> {
         controller: _pageController,
         physics: const BouncingScrollPhysics(),
         onPageChanged: (i) => setState(() => _selectedIndex = i),
+        // Menu list route
         children: [
           _homePageContent(),
-          DashboardProfile(userData: userData),
           const KiosListAntrean(),
+          DashboardProfile(userData: userData),
         ],
       ),
     );
@@ -252,9 +250,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// =====================================================================
-// 🔵 WIDGET CARD RIWAYAT
-// =====================================================================
+
 
 class HistoryCard extends StatelessWidget {
   final String poliName;

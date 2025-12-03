@@ -13,11 +13,11 @@ class _AntreanPageState extends State<AntreanPage> {
   bool _isLoading = true;
 
   String _userNomor = "-";
-  String _userStatus = "-";
+  String _userStatus = "-"; 
   String _poliId = "-";
 
-  String _currentServed = "-"; // nomor yang sedang dilayani
-  int _position = 0; // posisi user dalam antrean
+  String _currentServed = "-"; 
+  int _position = 0; 
 
   @override
   void initState() {
@@ -25,14 +25,11 @@ class _AntreanPageState extends State<AntreanPage> {
     _loadAntrean();
   }
 
-  // =====================================================
-  // 🔵 LOAD DATA ANTREAN USER + ANTREAN POLI
-  // =====================================================
+
   Future<void> _loadAntrean() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid ?? "";
 
-      // Ambil antrean user
       final userSnap =
           await FirebaseDatabase.instance.ref("antrean_user/$uid").get();
 
@@ -47,29 +44,43 @@ class _AntreanPageState extends State<AntreanPage> {
       final data = userSnap.value as Map;
       _poliId = data["poli_id"];
       _userNomor = data["nomor"].toString();
+      _userStatus = data["status"] ?? "-";
 
-      // Ambil antrean poli sesuai poli_id
+
+      if (_userStatus.toLowerCase() == "selesai") {
+        await FirebaseDatabase.instance.ref("antrean_user/$uid").remove();
+        await FirebaseDatabase.instance
+            .ref("antrean/$_poliId/${_userNomor}")
+            .remove();
+
+        setState(() {
+          _userNomor = "-";
+          _userStatus = "Tidak ada antrean";
+          _position = 0;
+          _isLoading = false;
+        });
+
+        return;
+      }
+
+  
       final poliSnap =
           await FirebaseDatabase.instance.ref("antrean/$_poliId").get();
 
       List antreanList = [];
       String served = "-";
 
-if (poliSnap.exists) {
-  for (var child in poliSnap.children) {
-    final a = child.value as Map;
+      if (poliSnap.exists) {
+        for (var child in poliSnap.children) {
+          final a = child.value as Map;
+          antreanList.add(a);
 
-    antreanList.add(a);
+          if (a["status"] == "berjalan") {
+            served = a["nomor"].toString();
+          }
+        }
+      }
 
-    // ✅ FIX — ambil nomor yg sedang berjalan
-    if (a["status"] == "berjalan") {
-      served = a["nomor"].toString();
-    }
-  }
-}
-
-
-      // Hitung posisi
       antreanList.sort((a, b) => a["nomor"].compareTo(b["nomor"]));
 
       int pos = 0;
@@ -83,21 +94,16 @@ if (poliSnap.exists) {
       setState(() {
         _currentServed = served;
         _position = pos;
-        _userStatus = "Menunggu giliran";
         _isLoading = false;
       });
-    } 
-   catch (e) {
-  print("ERROR: $e");
-  if (!mounted) return;  // <-- Tambahkan ini
-  setState(() => _isLoading = false);
-}
-
+    } catch (e) {
+      print("ERROR: $e");
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
   }
 
-  // =====================================================
-  // 🔵 POPUP KONFIRMASI BATALKAN ANTREAN
-  // =====================================================
+
   Future<void> _showCancelDialog() async {
     return showDialog(
       context: context,
@@ -130,7 +136,7 @@ if (poliSnap.exists) {
 
                 Row(
                   children: [
-                    // ❌ Tidak
+              
                     Expanded(
                       child: SizedBox(
                         height: 46,
@@ -156,7 +162,7 @@ if (poliSnap.exists) {
 
                     const SizedBox(width: 14),
 
-                    // ✅ Ya, Batalkan
+             
                     Expanded(
                       child: SizedBox(
                         height: 46,
@@ -167,28 +173,23 @@ if (poliSnap.exists) {
                             final uid =
                                 FirebaseAuth.instance.currentUser!.uid;
 
-                            // Hapus antrean_user
                             await FirebaseDatabase.instance
                                 .ref("antrean_user/$uid")
                                 .remove();
 
-                            // Hapus antrean pada poli jika ada
-                            if (_poliId != "-" && _userNomor != "-") {
-                              await FirebaseDatabase.instance
-                                  .ref("antrean/$_poliId/${_userNomor}")
-                                  .remove();
-                            }
+                            await FirebaseDatabase.instance
+                                .ref("antrean/$_poliId/${_userNomor}")
+                                .remove();
 
                             setState(() {
                               _userNomor = "-";
-                              _userStatus = "Dibatalkan";
+                              _userStatus = "Tidak ada antrean";
                               _position = 0;
                             });
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content:
-                                    Text("Antrean berhasil dibatalkan."),
+                                content: Text("Antrean berhasil dibatalkan."),
                                 backgroundColor: Colors.blue,
                               ),
                             );
@@ -220,9 +221,6 @@ if (poliSnap.exists) {
     );
   }
 
-  // =====================================================
-  // 🔵 UI
-  // =====================================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -233,7 +231,7 @@ if (poliSnap.exists) {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  // ========== CARD SEDANG DILAYANI ==========
+    
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
@@ -271,15 +269,17 @@ if (poliSnap.exists) {
 
                   const SizedBox(height: 30),
 
-                  // ========== CARD ANTREAN USER ==========
+
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(26),
-                      border:
-                          Border.all(color: const Color(0xFF256EFF), width: 2),
+                      border: Border.all(
+                        color: const Color(0xFF256EFF),
+                        width: 2,
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -315,29 +315,31 @@ if (poliSnap.exists) {
 
                         const SizedBox(height: 20),
 
-                        // 🔵 BUTTON CANCEL DENGAN POPUP
-                        SizedBox(
-                          width: double.infinity,
-                          height: 44,
-                          child: OutlinedButton(
-                            onPressed: () => _showCancelDialog(),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                  color: Color(0xFF256EFF), width: 1.5),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                        if (_userStatus != "selesai" &&
+                            _userStatus != "Tidak ada antrean" &&
+                            _userNomor != "-")
+                          SizedBox(
+                            width: double.infinity,
+                            height: 44,
+                            child: OutlinedButton(
+                              onPressed: () => _showCancelDialog(),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                    color: Color(0xFF256EFF), width: 1.5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              "Cancel Antrean",
-                              style: TextStyle(
-                                color: Color(0xFF256EFF),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                              child: const Text(
+                                "Cancel Antrean",
+                                style: TextStyle(
+                                  color: Color(0xFF256EFF),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
-                        )
                       ],
                     ),
                   ),

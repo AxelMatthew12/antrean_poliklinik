@@ -21,43 +21,53 @@ class _HistoryPageState extends State<HistoryPage> {
     _loadHistory();
   }
 
-  // =============================================================
-  // 🔵 LOAD RIWAYAT DARI FIREBASE (status = selesai)
-  // =============================================================
-  Future<void> _loadHistory() async {
-    try {
-      final antreanRef =
-          FirebaseDatabase.instance.ref("antrean");
+Future<void> _loadHistory() async {
+  try {
+    final antreanRef = FirebaseDatabase.instance.ref("antrean");
+    final snapshot = await antreanRef.get();
 
-      final snapshot = await antreanRef.get();
-      List<Map> temp = [];
+    List<Map> temp = [];
 
-      if (snapshot.exists) {
-        for (var poliNode in snapshot.children) {
-          for (var nomorNode in poliNode.children) {
-            final data = nomorNode.value as Map;
+    if (snapshot.exists) {
+      for (var poliNode in snapshot.children) {
+        for (var nomorNode in poliNode.children) {
+          final data = nomorNode.value as Map;
 
-            if (data["pasien_uid"] == uid &&
-                data["status"] == "selesai") {
-              temp.add({
-                "poli": poliNode.key,
-                "nomor": data["nomor"],
-                "deskripsi": "Pemeriksaan telah selesai.",
-              });
-            }
+          if (data["pasien_uid"] == uid && data["status"] == "selesai") {
+            temp.add({
+              "poli": poliNode.key.toString(),
+              "nomor": data["nomor"].toString(),
+              "deskripsi": "Pemeriksaan telah selesai.",
+            });
           }
         }
       }
-
-      setState(() {
-        historyList = temp;
-        isLoading = false;
-      });
-    } catch (e) {
-      print("ERROR: $e");
-      setState(() => isLoading = false);
     }
+
+
+    int extractNumber(String value) {
+      // contoh: X001 → 1
+      final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+      return int.tryParse(digits) ?? 0;
+    }
+
+    temp.sort((a, b) {
+      int poliSort = a["poli"].compareTo(b["poli"]);
+      if (poliSort != 0) return poliSort;
+
+      // kalau poli sama → urutkan berdasarkan nomor antrean
+      return extractNumber(a["nomor"]).compareTo(extractNumber(b["nomor"]));
+    });
+
+    setState(() {
+      historyList = temp;
+      isLoading = false;
+    });
+  } catch (e) {
+    print("ERROR: $e");
+    setState(() => isLoading = false);
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -92,9 +102,6 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 }
 
-// =====================================================================
-// 🔵 WIDGET CARD RIWAYAT (TETAP, TIDAK DIUBAH)
-// =====================================================================
 
 class _HistoryCard extends StatelessWidget {
   final String poliName;
