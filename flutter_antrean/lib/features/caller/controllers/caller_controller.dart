@@ -1,60 +1,104 @@
+import 'package:antrean_poliklinik/core/antrean_service.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+final antreanService = AntreanService();
+
 class CallerController {
-  final db = FirebaseDatabase.instance.ref();
+  /// ===============================
+  /// MEMANGGIL ANTREAN BERIKUTNYA
+  /// ===============================
+  Future<void> panggil(String layananId, String loketId) async {
+    try {
+      final result = await antreanService.panggilAntreanBerikutnya(
+        layananId,
+        loketId,
+      );
 
-  /// ================================
-  /// 1. PANGGIL ANTREAN
-  /// - Mengubah status antrean menjadi "dipanggil"
-  /// - Mengirim trigger ke display agar audio berbunyi
-  /// ================================
+      if (result == null) {
+        print("Tidak ada antrean menunggu.");
+        return;
+      }
+
+      final nomor = result['nomor'];
+      final poli = result['poli'];
+
+      print("Memanggil antrean: $nomor ($poli)");
+
+      // TRIGGER DISPLAY + AUDIO
+      await panggilAntrian(layananId, nomor, poli);
+
+    } catch (e) {
+      print("Error saat memanggil antrean: $e");
+    }
+  }
+
+  /// ===============================
+  /// TRIGGER DISPLAY UNTUK AUDIO
+  /// ===============================
   Future<void> panggilAntrian(
-    String layananID,
-    String nomor,
-    String namaPoli,
-  ) async {
-    // Update status antrean menjadi dipanggil
-    await db.child("antrean/$layananID/$nomor").update({
-      "status": "dilayani",
-    });
+      String layananID, String nomor, String namaPoli) async {
+    try {
+      // Update status antrean → dipanggil
+      await FirebaseDatabase.instance.ref("antrean/$layananID/$nomor").update({
+        "status": "dipanggil",
+      });
 
-    // Trigger untuk display (website)
-    await db.child("display/$layananID").set({
-      "nomor": nomor,
-      "poli": namaPoli,
-      "status": "dilayani",
-      "timestamp": ServerValue.timestamp,
-    });
+      // Trigger display
+      await FirebaseDatabase.instance.ref("display/$layananID").set({
+        "nomor": nomor,
+        "poli": namaPoli,
+        "status": "dipanggil",
+        "timestamp": ServerValue.timestamp,
+      });
+
+      print("Display triggered untuk nomor $nomor ($namaPoli)");
+
+    } catch (e) {
+      print("Error trigger display: $e");
+    }
   }
 
-  /// ================================
-  /// 2. UPDATE STATUS (fungsi umum)
-  /// digunakan untuk:
-  /// - Layani (menunggu → dipanggil)
-  /// - Selesai (dipanggil → selesai)
-  /// ================================
-  Future<void> updateStatus(
-      String layananID, String nomor, String status) async {
-    await db.child("antrean/$layananID/$nomor").update({
-      "status": status,
-    });
+  /// ===============================
+  /// AMBIL ANTREAN YANG SEDANG DILAYANI
+  /// ===============================
+  Future<String?> getSedangDilayani(String layananId) async {
+    try {
+      return await antreanService.getSedangDilayani(layananId);
+    } catch (e) {
+      print("Error getSedangDilayani: $e");
+      return null;
+    }
   }
 
-  /// ================================
-  /// 3. SELESAIKAN ANTREAN
-  /// ================================
-  Future<void> selesaikanAntrean(String layananID, String nomor) async {
-    await db.child("antrean/$layananID/$nomor").update({
-      "status": "selesai",
-    });
+  /// ===============================
+  /// SELESAIKAN ANTREAN
+  /// ===============================
+  Future<void> selesaikan(String layananId, String nomorAntrean) async {
+    try {
+      final success = await antreanService.selesaikanAntrean(
+        layananId,
+        nomorAntrean,
+      );
+
+      if (success) print("Antrean $nomorAntrean telah diselesaikan.");
+    } catch (e) {
+      print("Error saat menyelesaikan antrean: $e");
+    }
   }
 
-  /// ================================
-  /// 4. BATALKAN ANTREAN
-  /// ================================
-  Future<void> batalkanAntrean(String layananID, String nomor) async {
-    await db.child("antrean/$layananID/$nomor").update({
-      "status": "batal",
-    });
+  /// ===============================
+  /// BATALKAN ANTREAN
+  /// ===============================
+  Future<void> batalkan(String layananId, String nomorAntrean) async {
+    try {
+      final success = await antreanService.batalkanAntrean(
+        layananId,
+        nomorAntrean,
+      );
+
+      if (success) print("Antrean $nomorAntrean telah dibatalkan.");
+    } catch (e) {
+      print("Error saat membatalkan antrean: $e");
+    }
   }
 }

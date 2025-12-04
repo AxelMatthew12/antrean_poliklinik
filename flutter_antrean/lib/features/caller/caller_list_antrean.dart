@@ -1,19 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:antrean_poliklinik/features/caller/caller_antrean_card.dart';
+import 'package:antrean_poliklinik/features/caller/caller_antrean_detail.dart';
+import 'package:antrean_poliklinik/features/caller/controllers/caller_controller.dart';
+import 'package:antrean_poliklinik/features/caller/models/antrean_model.dart';
+// import 'package:antrean_poliklinik/features/caller/caller_controller.dart';
+import 'package:antrean_poliklinik/widget/caller_list_menu.dart';
 import 'package:firebase_database/firebase_database.dart';
-
-class AntreanModel {
-  final String id;
-  final String nomor;
-  final String poli;
-  final String status;
-
-  AntreanModel({
-    required this.id,
-    required this.nomor,
-    required this.poli,
-    required this.status,
-  });
-}
+import 'package:flutter/material.dart';
 
 class CallerListAntrean extends StatefulWidget {
   final String layananID;
@@ -25,189 +17,257 @@ class CallerListAntrean extends StatefulWidget {
 }
 
 class _CallerListAntreanState extends State<CallerListAntrean> {
-  final DatabaseReference ref = FirebaseDatabase.instance.ref("antrian");
-  List<AntreanModel> antreanList = [];
-  bool loading = true;
+  String activeTab = "Menunggu";
+  late DatabaseReference antreanRef;
 
   @override
   void initState() {
     super.initState();
-    _listenAntrean();
+    antreanRef = FirebaseDatabase.instance
+        .ref()
+        .child("antrean")
+        .child(widget.layananID);
   }
 
-  /// LISTEN FIREBASE
-  void _listenAntrean() {
-    ref.child(widget.layananID).onValue.listen((event) {
-      antreanList.clear();
+  /// STREAM ANTREAN
+  Stream<List<AntreanModel>> _getAntreanStream(String status) {
+    return antreanRef.onValue.map((event) {
+      final data = event.snapshot.value as Map?;
+      if (data == null) return [];
 
-      if (event.snapshot.value != null) {
-        final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-
-        data.forEach((key, value) {
-          antreanList.add(AntreanModel(
-            id: key,
-            nomor: value["nomor"] ?? "-",
-            poli: value["poli"] ?? widget.layananID,
-            status: value["status"] ?? "menunggu",
-          ));
-        });
-
-        /// SORT NOMOR
-        antreanList.sort((a, b) {
-          return int.parse(a.nomor).compareTo(int.parse(b.nomor));
-        });
-      }
-
-      setState(() => loading = false);
+      return data.entries
+          .map((e) => AntreanModel.fromMap(e.key, e.value))
+          .where((a) => a.status.toLowerCase() == status.toLowerCase())
+          .toList();
     });
   }
 
-  /// UPDATE STATUS ANTREAN
-  Future<void> _updateStatus(AntreanModel antrean, String statusBaru) async {
-    await ref
-        .child(widget.layananID)
-        .child(antrean.id)
-        .update({"status": statusBaru});
-  }
+  /// UPDATE STATUS
+  Future<void> _updateStatus(AntreanModel antrean, String newStatus) async {
+    final pasienUID = antrean.pasienUID;
 
-  /// KIRIM KE DISPLAY
-  Future<void> _panggilKeDisplay(AntreanModel antrean) async {
-    await FirebaseDatabase.instance.ref("antrian_display").update({
-      "nomor": antrean.nomor,
-      "loket": antrean.poli,
-      "timestamp": DateTime.now().millisecondsSinceEpoch,
-    });
-  }
+    await antreanRef.child(antrean.nomor).update({"status": newStatus});
 
-  /// MEMANGGIL NOMOR BERIKUTNYA
-  Future<void> _panggilBerikutnya() async {
-    // Cari antrean status menunggu
-    final menunggu = antreanList.where((a) => a.status == "menunggu").toList();
-
-    if (menunggu.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Tidak ada antrean menunggu.")),
-      );
-      return;
-    }
-
-    final next = menunggu.first;
-
-    // Update status menjadi berjalan
-    await _updateStatus(next, "berjalan");
-
-    // Kirim ke display
-    await _panggilKeDisplay(next);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Memanggil nomor ${next.nomor}")),
-    );
+    await FirebaseDatabase.instance
+        .ref()
+        .child("antrean_user")
+        .child(pasienUID)
+        .update({"status": newStatus});
   }
 
   /// POPUP KONFIRMASI
-  void _showConfirmDialog({
+  Future<void> _showConfirmDialog({
     required String title,
     required String confirmText,
     required VoidCallback onConfirm,
   }) {
-    showDialog(
+    return showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        actions: [
-          TextButton(
-            child: const Text("Batal"),
-            onPressed: () => Navigator.pop(context),
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
           ),
-          ElevatedButton(
-            child: Text(confirmText),
-            onPressed: () {
-              Navigator.pop(context);
-              onConfirm();
-            },
+          title: Center(
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF2B6BFF),
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
           ),
-        ],
-      ),
+          content: const Text(
+            "Lanjutkan Panggilan Urutan Pasien?",
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                /// TIDAK
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFFE8EDFF),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    "Tidak",
+                    style: TextStyle(color: Color(0xFF2B6BFF)),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                /// YA
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    onConfirm();
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFF2B6BFF),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Text(
+                    confirmText,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return Column(
-      children: [
-        const SizedBox(height: 10),
-
-        /// TOMBOL PANGGIL NOMOR BERIKUTNYA
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ElevatedButton.icon(
-            onPressed: _panggilBerikutnya,
-            icon: const Icon(Icons.volume_up),
-            label: const Text("Panggil Nomor Berikutnya"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 48),
-            ),
-          ),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 18,
         ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ====== TITLE ======
+            const Center(
+              child: Text(
+                "Profil Petugas",
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Color(0xFF256EFF),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
 
-        const SizedBox(height: 10),
+            /// TAB MENU
+            CallerListMenu(
+              activeTab: activeTab,
+              onTabChanged: (tab) {
+                setState(() => activeTab = tab);
+              },
+            ),
 
-        Expanded(
-          child: antreanList.isEmpty
-              ? const Center(child: Text("Belum ada antrean"))
-              : ListView.builder(
-                  itemCount: antreanList.length,
-                  itemBuilder: (context, index) {
-                    final antrean = antreanList[index];
+            const SizedBox(height: 0),
 
-                    return Card(
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          child: Text(antrean.nomor),
-                        ),
-                        title: Text("Nomor Antrian ${antrean.nomor}"),
-                        subtitle: Text("Status: ${antrean.status}"),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.more_vert),
+            /// LIST ANTREAN
+            Expanded(
+              child: StreamBuilder<List<AntreanModel>>(
+                stream: _getAntreanStream(activeTab),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final antreanList = snapshot.data!;
+
+                  if (antreanList.isEmpty) {
+                    return const Center(child: Text("Tidak ada antrean."));
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    itemCount: antreanList.length,
+                    itemBuilder: (context, index) {
+                      final antrean = antreanList[index];
+
+                      /// == Tentukan teks tombol ==
+                      String buttonText = "";
+                      if (antrean.status == "menunggu") {
+                        buttonText = "Panggil";
+                      } else if (antrean.status == "berjalan") {
+                        buttonText = "Selesai";
+                      } else if (antrean.status == "selesai") {
+                        buttonText = "Detail";
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: CallerAntreanCard(
+                          poli: antrean.poli,
+                          nomor: antrean.nomor,
+                          waktu: antrean.waktu,
+                          status: antrean.status,
+                          buttonText: buttonText,
                           onPressed: () {
+                            /// ============================
+                            ///   STATUS: MENUNGGU → DIPANGGIL
+                            /// ============================
                             if (antrean.status == "menunggu") {
                               _showConfirmDialog(
-                                title: "Layani Antrean",
-                                confirmText: "Lanjut",
+                                title: "Panggil Antrean",
+                                confirmText: "Ya, Panggil",
                                 onConfirm: () async {
+                                  // TRIGGER DISPLAY + AUDIO
+                                  await CallerController().panggilAntrian(
+                                    antrean.layananID,
+                                    antrean.nomor,
+                                    antrean.poli,
+                                  );
+
+                                  // Update status app pasien
                                   await _updateStatus(antrean, "berjalan");
-                                  await _panggilKeDisplay(antrean);
                                 },
                               );
-                            } else if (antrean.status == "berjalan") {
+                            }
+
+                            /// ============================
+                            ///   STATUS: BERJALAN → SELESAI
+                            /// ============================
+                            else if (antrean.status == "berjalan") {
                               _showConfirmDialog(
-                                title: "Selesaikan",
-                                confirmText: "Selesai",
+                                title: "Selesaikan Antrean",
+                                confirmText: "Ya, Selesai",
                                 onConfirm: () =>
                                     _updateStatus(antrean, "selesai"),
                               );
-                            } else if (antrean.status == "selesai") {
-                              _showConfirmDialog(
-                                title: "Kembalikan ke Menunggu",
-                                confirmText: "Kembalikan",
-                                onConfirm: () =>
-                                    _updateStatus(antrean, "menunggu"),
+                            }
+
+                            /// ============================
+                            ///   STATUS: SELESAI → DETAIL
+                            /// ============================
+                            else if (antrean.status == "selesai") {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      CallerDetailAntrean(antrean: antrean),
+                                ),
                               );
                             }
                           },
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
