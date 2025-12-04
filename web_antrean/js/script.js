@@ -65,19 +65,33 @@ function loadPage(pageName) {
     .then((html) => {
       target.innerHTML = html;
 
+      // Jika halaman display diload -> load display_queue.js (Listener Firebase)
+      if (pageName === "display") {
+        import("./display_queue.js") 
+          .catch(err => console.error("Gagal memuat display_queue.js:", err));
+      }
       // Jika halaman poli diload → load poli.js
-      if (pageName === "poli") {
-        if (pageName === "poli") {
-          import("./poli.js");
-        }
+      else if (pageName === "poli") { // Ganti if (pageName === "poli") menjadi else if
+      import("./poli.js");
       }
       // Jika halaman petugas diload → load petugas.js
-      if (pageName === "petugas") {
-        if (pageName === "petugas") {
-          import("./petugas.js");
-        }
+      else if (pageName === "petugas") { // Ganti if (pageName === "petugas") menjadi else if
+      import("./petugas.js");
       }
-    })
+      })
+    //   // Jika halaman poli diload → load poli.js
+    //   if (pageName === "poli") {
+    //     if (pageName === "poli") {
+    //       import("./poli.js");
+    //     }
+    //   }
+    //   // Jika halaman petugas diload → load petugas.js
+    //   if (pageName === "petugas") {
+    //     if (pageName === "petugas") {
+    //       import("./petugas.js");
+    //     }
+    //   }
+    // })
     .catch((err) => {
       target.innerHTML = `<p style="padding:20px; color:red;">
                 Halaman <strong>${pageName}</strong> tidak ditemukan.

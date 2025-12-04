@@ -1,50 +1,96 @@
-<div class="container display-container">
+<div class="display-container">
 
-    <!-- BOX UTAMA NOMOR PANGGILAN -->
-    <div class="main-box">
-        <div class="title">NOMOR PANGGILAN</div>
-        <div class="main-number" id="mainNumber">A026</div> 
-        <div class="title">LOKET 1</div>
-    </div>
+    <!-- GRID 4 POLI DALAM 1 LAYAR -->
+    <div class="poli-grid">
 
+        <!-- POLI UMUM -->
+        <div class="poli-section">
+            <div class="poli-header">
+                <i class="fas fa-user-md"></i>
+                <h2>POLI UMUM</h2>
+            </div>
 
-    <!-- GRID ANTRIAN SELANJUTNYA -->
-    <div class="grid">
-        <div class="small-box">
-            <div class="small-title">ANTRIAN SELANJUTNYA</div>
-            <div class="small-number">A027</div>
-            <div>LOKET 1</div>
+            <div class="antrian-row">
+                <div class="antrian-box now">
+                    <div class="antrian-label">SEKARANG</div>
+                    <div class="antrian-number" id="umum-sekarang">-</div>
+                    <div class="loket-info" id="umum-loket-sekarang">LOKET -</div>
+                </div>
+
+                <div class="antrian-box next">
+                    <div class="antrian-label">SELANJUTNYA</div>
+                    <div class="antrian-number" id="umum-selanjutnya">-</div>
+                    <div class="loket-info" id="umum-loket-selanjutnya">LOKET -</div>
+                </div>
+            </div>
         </div>
 
-        <div class="small-box">
-            <div class="small-title">ANTRIAN SELANJUTNYA</div>
-            <div class="small-number">B005</div>
-            <div>LOKET 2</div>
+        <!-- POLI GIGI -->
+        <div class="poli-section">
+            <div class="poli-header">
+                <i class="fas fa-tooth"></i>
+                <h2>POLI GIGI</h2>
+            </div>
+
+            <div class="antrian-row">
+                <div class="antrian-box now">
+                    <div class="antrian-label">SEKARANG</div>
+                    <div class="antrian-number" id="gigi-sekarang">-</div>
+                    <div class="loket-info" id="gigi-loket-sekarang">LOKET -</div>
+                </div>
+
+                <div class="antrian-box next">
+                    <div class="antrian-label">SELANJUTNYA</div>
+                    <div class="antrian-number" id="gigi-selanjutnya">-</div>
+                    <div class="loket-info" id="gigi-loket-selanjutnya">LOKET -</div>
+                </div>
+            </div>
         </div>
 
-        <div class="small-box">
-            <div class="small-title">ANTRIAN SELANJUTNYA</div>
-            <div class="small-number">C012</div>
-            <div>LOKET 3</div>
+        <!-- POLI ANAK -->
+        <div class="poli-section">
+            <div class="poli-header">
+                <i class="fas fa-baby"></i>
+                <h2>POLI ANAK</h2>
+            </div>
+
+            <div class="antrian-row">
+                <div class="antrian-box now">
+                    <div class="antrian-label">SEKARANG</div>
+                    <div class="antrian-number" id="anak-sekarang">-</div>
+                    <div class="loket-info" id="anak-loket-sekarang">LOKET -</div>
+                </div>
+
+                <div class="antrian-box next">
+                    <div class="antrian-label">SELANJUTNYA</div>
+                    <div class="antrian-number" id="anak-selanjutnya">-</div>
+                    <div class="loket-info" id="anak-loket-selanjutnya">LOKET -</div>
+                </div>
+            </div>
         </div>
 
-        <div class="small-box">
-            <div class="small-title">ANTRIAN SELANJUTNYA</div>
-            <div class="small-number">A028</div>
-            <div>LOKET 1</div>
+        <!-- POLI BEDAH -->
+        <div class="poli-section">
+            <div class="poli-header">
+                <i class="fas fa-syringe"></i>
+                <h2>POLI BEDAH</h2>
+            </div>
+
+            <div class="antrian-row">
+                <div class="antrian-box now">
+                    <div class="antrian-label">SEKARANG</div>
+                    <div class="antrian-number" id="bedah-sekarang">-</div>
+                    <div class="loket-info" id="bedah-loket-sekarang">LOKET -</div>
+                </div>
+
+                <div class="antrian-box next">
+                    <div class="antrian-label">SELANJUTNYA</div>
+                    <div class="antrian-number" id="bedah-selanjutnya">-</div>
+                    <div class="loket-info" id="bedah-loket-selanjutnya">LOKET -</div>
+                </div>
+            </div>
         </div>
 
-        <div class="small-box">
-            <div class="small-title">ANTRIAN SELANJUTNYA</div>
-            <div class="small-number">B006</div>
-            <div>LOKET 2</div>
-        </div>
-
-        <div class="small-box">
-            <div class="small-title">ANTRIAN SELANJUTNYA</div>
-            <div class="small-number">C013</div>
-            <div>LOKET 3</div>
-        </div>
-    </div>
+    </div> <!-- END GRID -->
 
 </div>
