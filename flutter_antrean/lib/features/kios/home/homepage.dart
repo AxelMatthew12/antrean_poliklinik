@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
     _loadRecentHistory();
   }
 
-  Future<void> _loadRecentHistory() async {
+ Future<void> _loadRecentHistory() async {
   try {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final antreanRef = FirebaseDatabase.instance.ref("antrean");
@@ -43,28 +43,40 @@ class _HomePageState extends State<HomePage> {
     if (snapshot.exists) {
       for (var poliNode in snapshot.children) {
         for (var nomorNode in poliNode.children) {
+          if (nomorNode.value is! Map) continue;
+
           final data = nomorNode.value as Map;
 
-          // Sama seperti HistoryPage
-          if (data["pasien_uid"] == uid &&
-              data["status"] == "selesai") {
+          if (data["pasien_uid"] == uid && data["status"] == "selesai") {
             temp.add({
               "poli": poliNode.key,
-              "nomor": data["nomor"],
+              "nomor": data["nomor"].toString(),
+              "timestamp": data["timestamp"] ?? 0,
               "deskripsi": "Pemeriksaan telah selesai.",
             });
-
-            // 🔥 Jika sudah 3 data → cukup
-            if (temp.length == 3) break;
           }
         }
-
-        if (temp.length == 3) break;
       }
     }
 
+    // Jika tidak ada timestamp → sort berdasarkan nomor
+    temp.sort((a, b) {
+      int t1 = a["timestamp"] ?? 0;
+      int t2 = b["timestamp"] ?? 0;
+
+      if (t1 != 0 && t2 != 0) {
+        return t2.compareTo(t1); // sort berdasarkan timestamp
+      }
+
+      // fallback: sort berdasarkan nomor antrean
+      return a["nomor"].compareTo(b["nomor"]);
+    });
+
+    // ambil hanya 3 riwayat
+    final limited = temp.length > 3 ? temp.sublist(0, 3) : temp;
+
     setState(() {
-      recentHistory = temp;
+      recentHistory = limited;
       isLoadingHistory = false;
     });
   } catch (e) {
@@ -72,6 +84,7 @@ class _HomePageState extends State<HomePage> {
     setState(() => isLoadingHistory = false);
   }
 }
+
 
 
 

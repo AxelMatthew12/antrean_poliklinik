@@ -4,7 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:antrean_poliklinik/widget/kiosListMenu.dart';
 import 'package:antrean_poliklinik/features/kios/Poly/ListPoly/DetailPoly.dart';
 import 'package:antrean_poliklinik/features/kios/Poly/Queue/AntreanPage.dart';
-import 'package:antrean_poliklinik/features/kios/Poly/HistoryPage.dart';
+import 'package:antrean_poliklinik/features/kios/Poly/Queue/HistoryPage.dart';
 
 class PoliCard extends StatelessWidget {
   final PoliModel poli;

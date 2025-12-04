@@ -46,22 +46,19 @@ class _AntreanPageState extends State<AntreanPage> {
       _userNomor = data["nomor"].toString();
       _userStatus = data["status"] ?? "-";
 
+if (_userStatus.toLowerCase() == "selesai") {
+  setState(() {
+    _userNomor = "-";
+    _userStatus = "Tidak ada antrean";
+    _currentServed = "-";
+    _position = 0;
+    _isLoading = false;
+  });
 
-      if (_userStatus.toLowerCase() == "selesai") {
-        await FirebaseDatabase.instance.ref("antrean_user/$uid").remove();
-        await FirebaseDatabase.instance
-            .ref("antrean/$_poliId/${_userNomor}")
-            .remove();
+  return;
+}
 
-        setState(() {
-          _userNomor = "-";
-          _userStatus = "Tidak ada antrean";
-          _position = 0;
-          _isLoading = false;
-        });
 
-        return;
-      }
 
   
       final poliSnap =
