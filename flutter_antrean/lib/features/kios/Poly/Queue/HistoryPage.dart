@@ -21,53 +21,75 @@ class _HistoryPageState extends State<HistoryPage> {
     _loadHistory();
   }
 
-Future<void> _loadHistory() async {
-  try {
-    final antreanRef = FirebaseDatabase.instance.ref("antrean");
-    final snapshot = await antreanRef.get();
+  Future<void> _loadHistory() async {
+    try {
+      final antreanRef = FirebaseDatabase.instance.ref("antrean");
+      final snapshot = await antreanRef.get();
 
-    List<Map> temp = [];
+      List<Map> temp = [];
 
-    if (snapshot.exists) {
-      for (var poliNode in snapshot.children) {
-        for (var nomorNode in poliNode.children) {
-          final data = nomorNode.value as Map;
+      if (snapshot.exists) {
+        for (var poliNode in snapshot.children) {
+          String poliId = poliNode.key ?? "-";
 
-          if (data["pasien_uid"] == uid && data["status"] == "selesai") {
-            temp.add({
-              "poli": poliNode.key.toString(),
-              "nomor": data["nomor"].toString(),
-              "deskripsi": "Pemeriksaan telah selesai.",
-            });
+          for (var nomorNode in poliNode.children) {
+            if (nomorNode.value is! Map) continue;
+
+            final data = nomorNode.value as Map;
+
+            if (data["pasien_uid"] == uid && data["status"] == "selesai") {
+              temp.add({
+                "poli_id": poliId,
+                "poli_name": _formatPoliName(poliId),
+                "nomor": data["nomor"]?.toString() ?? "-",
+                "deskripsi":
+                    data["deskripsi"] ?? "Pemeriksaan telah selesai.",
+                "timestamp": data["timestamp"] ?? 0,
+              });
+            }
           }
         }
       }
+
+      int extractNumber(String value) {
+        final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+        return int.tryParse(digits) ?? 0;
+      }
+
+temp.sort((a, b) {
+  // Urutkan berdasarkan nama poli
+  int poliSort = a["poli_name"].compareTo(b["poli_name"]);
+  if (poliSort != 0) return poliSort;
+
+  // Jika poli sama → urutkan nomor antrean berdasarkan angka
+  int numA = extractNumber(a["nomor"]);
+  int numB = extractNumber(b["nomor"]);
+  return numA.compareTo(numB);
+});
+
+
+      setState(() {
+        historyList = temp;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("ERROR: $e");
+      setState(() => isLoading = false);
     }
-
-
-    int extractNumber(String value) {
-      // contoh: X001 → 1
-      final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-      return int.tryParse(digits) ?? 0;
-    }
-
-    temp.sort((a, b) {
-      int poliSort = a["poli"].compareTo(b["poli"]);
-      if (poliSort != 0) return poliSort;
-
-      // kalau poli sama → urutkan berdasarkan nomor antrean
-      return extractNumber(a["nomor"]).compareTo(extractNumber(b["nomor"]));
-    });
-
-    setState(() {
-      historyList = temp;
-      isLoading = false;
-    });
-  } catch (e) {
-    print("ERROR: $e");
-    setState(() => isLoading = false);
   }
-}
+
+  String _formatPoliName(String poliId) {
+    switch (poliId) {
+      case "poli_umum":
+        return "Poli Umum";
+      case "poli_gigi":
+        return "Poli Gigi";
+      case "poli_anak":
+        return "Poli Anak";
+      default:
+        return poliId;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,21 +109,21 @@ Future<void> _loadHistory() async {
                   ),
                 )
               : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 12),
                   child: Column(
-                    children: historyList
-                        .map((item) => _HistoryCard(
-                              poliName: item["poli"],
-                              nomor: item["nomor"],
-                              description: item["deskripsi"],
-                            ))
-                        .toList(),
+                    children: historyList.map((item) {
+                      return _HistoryCard(
+                        poliName: item["poli_name"],
+                        nomor: item["nomor"],
+                        description: item["deskripsi"],
+                      );
+                    }).toList(),
                   ),
                 ),
     );
   }
 }
-
 
 class _HistoryCard extends StatelessWidget {
   final String poliName;
@@ -123,7 +145,7 @@ class _HistoryCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: const Color(0xFF256EFF),
+          color: Color(0xFF256EFF),
           width: 1.6,
         ),
       ),
@@ -206,3 +228,4 @@ class _HistoryCard extends StatelessWidget {
     );
   }
 }
+

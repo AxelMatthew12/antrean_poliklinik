@@ -60,15 +60,23 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
   // 🔵 AMBIL NOMOR ANTREAN
   // ===============================================================
   Future<void> _ambilNomorAntrean(BuildContext context) async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-      final uid = user.uid;
-      final userRef = FirebaseDatabase.instance.ref("antrean_user/$uid");
-      final cek = await userRef.get();
+    final uid = user.uid;
+    final userRef = FirebaseDatabase.instance.ref("antrean_user/$uid");
+    final cek = await userRef.get();
 
-      if (cek.exists) {
+    // ============================================================
+    // 🔵 CEK ANTREAN USER — TAPI CEK STATUS BUKAN HANYA EXISTS
+    // ============================================================
+
+    if (cek.exists) {
+      final data = cek.value as Map;
+
+      // Jika status masih aktif → tidak boleh daftar
+      if (data["status"] != "selesai") {
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
@@ -84,73 +92,85 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
         );
         return;
       }
+    }
 
-      final controller = KiosController();
-      final nomor = await controller.ambilNomor(widget.poli.id, uid);
+    // Jika status = selesai → boleh daftar antrean baru
+    // Lanjut proses pembuatan nomor antrean baru
+    // ============================================================
 
-      await FirebaseDatabase.instance
-          .ref("antrean/${widget.poli.id}/$nomor")
-          .set({
-        "nomor": nomor,
-        "pasien_uid": uid,
-        "status": "menunggu",
-        "waktu_ambil": DateTime.now().toIso8601String(),
-      });
+    final controller = KiosController();
+    final nomor = await controller.ambilNomor(widget.poli.id, uid);
 
-      await userRef.set({
-        "nomor": nomor,
-        "poli_id": widget.poli.id,
-        "status": "menunggu",
-      });
+    // Menyimpan antrean pada node poli
+    await FirebaseDatabase.instance
+        .ref("antrean/${widget.poli.id}/$nomor")
+        .set({
+      "nomor": nomor,
+      "pasien_uid": uid,
+      "status": "menunggu",
+      "waktu_ambil": DateTime.now().toIso8601String(),
+    });
 
-      showDialog(
-        context: context,
-        builder: (_) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.check_circle, color: Colors.blue, size: 60),
-                const SizedBox(height: 20),
-                const Text(
-                  "Anda berhasil mendaftar antrean",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 17,
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w600,
+    // Menyimpan antrean user
+    await userRef.set({
+      "nomor": nomor,
+      "poli_id": widget.poli.id,
+      "status": "menunggu",
+    });
+
+    // ============================================================
+    // 🔵 Popup Success
+    // ============================================================
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle, color: Colors.blue, size: 60),
+              const SizedBox(height: 20),
+              const Text(
+                "Anda berhasil mendaftar antrean",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 17,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: 180,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.blue, width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    "Lanjut Antrean",
+                    style: TextStyle(color: Colors.blue, fontSize: 16),
                   ),
                 ),
-                const SizedBox(height: 28),
-                SizedBox(
-                  width: 180,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.blue, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      "Lanjut Antrean",
-                      style: TextStyle(color: Colors.blue, fontSize: 16),
-                    ),
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
         ),
-      );
-    } catch (e) {
-      print("ERROR: $e");
-    }
+      ),
+    );
+  } catch (e) {
+    print("ERROR: $e");
   }
+}
+
 
   // ===============================================================
   @override
