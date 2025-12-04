@@ -26,7 +26,6 @@ class CallerController {
 
       // TRIGGER DISPLAY + AUDIO
       await panggilAntrian(layananId, nomor, poli);
-
     } catch (e) {
       print("Error saat memanggil antrean: $e");
     }
@@ -36,7 +35,10 @@ class CallerController {
   /// TRIGGER DISPLAY UNTUK AUDIO
   /// ===============================
   Future<void> panggilAntrian(
-      String layananID, String nomor, String namaPoli) async {
+    String layananID,
+    String nomor,
+    String namaPoli,
+  ) async {
     try {
       // Update status antrean → dipanggil
       await FirebaseDatabase.instance.ref("antrean/$layananID/$nomor").update({
@@ -52,7 +54,6 @@ class CallerController {
       });
 
       print("Display triggered untuk nomor $nomor ($namaPoli)");
-
     } catch (e) {
       print("Error trigger display: $e");
     }
