@@ -4,8 +4,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   loadComponent("components/sidebar.html", "sidebarContainer", () => {
     initSidebarToggle();
-    initMenuEvents(); // <-- aktifkan klik menu setelah sidebar selesai dimuat
-    loadPage("display"); // <-- default halaman pertama
+    initMenuEvents();
+    loadPage("display"); // default halaman pertama
   });
 
   loadComponent("components/header.html", "header");
@@ -41,22 +41,6 @@ function initSidebarToggle() {
 // ===============================
 // DYNAMIC PAGE LOADER (SPA)
 // ===============================
-// function loadPage(pageName) {
-//     const target = document.getElementById("content");
-
-//     fetch(`pages/${pageName}.html`)
-//         .then(res => res.text())
-//         .then(html => {
-//             target.innerHTML = html;
-//         })
-//         .catch(err => {
-//             target.innerHTML = `<p style="padding:20px; color:red;">
-//                 Halaman <strong>${pageName}</strong> tidak ditemukan.
-//             </p>`;
-//         });
-// }
-
-// modifikasi loadpage
 function loadPage(pageName) {
   const target = document.getElementById("content");
 
@@ -65,23 +49,25 @@ function loadPage(pageName) {
     .then((html) => {
       target.innerHTML = html;
 
-      // Jika halaman poli diload → load poli.js
+      // POLI
       if (pageName === "poli") {
-        if (pageName === "poli") {
-          import("./poli.js");
-        }
+        import("./poli.js");
       }
-      // Jika halaman petugas diload → load petugas.js
+
+      // PETUGAS
       if (pageName === "petugas") {
-        if (pageName === "petugas") {
-          import("./petugas.js");
-        }
+        import("./petugas.js");
+      }
+
+      // 👉 NEW: LOAD AUDIO + FIREBASE LISTENER SAAT HALAMAN DISPLAY DILOAD
+      if (pageName === "display") {
+        import("./display_audio.js"); // file JS tambahan khusus display
       }
     })
     .catch((err) => {
       target.innerHTML = `<p style="padding:20px; color:red;">
-                Halaman <strong>${pageName}</strong> tidak ditemukan.
-            </p>`;
+          Halaman <strong>${pageName}</strong> tidak ditemukan.
+      </p>`;
     });
 }
 
@@ -93,16 +79,10 @@ function initMenuEvents() {
 
   items.forEach((item) => {
     item.addEventListener("click", () => {
-      // Hapus class active di semua menu
       items.forEach((i) => i.classList.remove("active"));
-
-      // Tambahkan active ke menu yang diklik
       item.classList.add("active");
 
-      // Ambil nama halaman dari data-page=""
       const page = item.dataset.page;
-
-      // Load halaman
       loadPage(page);
     });
   });
@@ -114,13 +94,13 @@ function initMenuEvents() {
 function updateTime() {
   const now = new Date();
   document.getElementById("time").innerText = now.toLocaleTimeString("id-ID", {
-    hour12: false,
+    hour12: false
   });
   document.getElementById("date").innerText = now.toLocaleDateString("id-ID", {
     weekday: "long",
     day: "numeric",
     month: "long",
-    year: "numeric",
+    year: "numeric"
   });
 }
 
