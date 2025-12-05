@@ -5,15 +5,20 @@ class AntreanService {
 
   // Mapping prefix poli → nomor
   String getPrefix(String layananId) {
-    switch (layananId) {
-      case "POLI_UMUM":
-        return "A";
-      case "POLI_GIGI":
-        return "B";
-      default:
-        return "X";
-    }
+  switch (layananId) {
+    case "POLI_UMUM":
+      return "A";
+    case "POLI_GIGI":
+      return "B";
+    case "POLI_ANAK":
+      return "C";
+    case "POLI_BEDAH":
+      return "D";
+    default:
+      return "X";
   }
+}
+
 
   // 1. Function GENERATE NOMOR ANTREAN (menunggu)
   Future<String> generateNomorAntrean(

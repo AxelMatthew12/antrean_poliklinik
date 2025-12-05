@@ -17,7 +17,6 @@ function loadComponent(file, targetId, callback = null) {
     .then((res) => res.text())
     .then((html) => {
       document.getElementById(targetId).innerHTML = html;
-
       if (callback) callback();
     });
 }
@@ -49,41 +48,25 @@ function loadPage(pageName) {
     .then((html) => {
       target.innerHTML = html;
 
-      // 👉 NEW: LOAD AUDIO + FIREBASE LISTENER SAAT HALAMAN DISPLAY DILOAD
+      // Jika halaman display diload -> load display_audio.js & display_queue.js
       if (pageName === "display") {
-        import("./display_audio.js"); // file JS tambahan khusus display
-
-      // Jika halaman display diload -> load display_queue.js (Listener Firebase)
-      if (pageName === "display") {
-        import("./display_queue.js") 
-          .catch(err => console.error("Gagal memuat display_queue.js:", err));
+        import("./display_audio.js")
+          .catch((err) => console.error("Gagal memuat display_audio.js:", err));
+        import("./display_queue.js")
+          .catch((err) => console.error("Gagal memuat display_queue.js:", err));
+      } else if (pageName === "poli") {
+        import("./poli.js")
+          .catch((err) => console.error("Gagal memuat poli.js:", err));
+      } else if (pageName === "petugas") {
+        import("./petugas.js")
+          .catch((err) => console.error("Gagal memuat petugas.js:", err));
       }
-      // Jika halaman poli diload → load poli.js
-      else if (pageName === "poli") { // Ganti if (pageName === "poli") menjadi else if
-      import("./poli.js");
-      }
-      // Jika halaman petugas diload → load petugas.js
-      else if (pageName === "petugas") { // Ganti if (pageName === "petugas") menjadi else if
-      import("./petugas.js");
-      }
-      })
-    //   // Jika halaman poli diload → load poli.js
-    //   if (pageName === "poli") {
-    //     if (pageName === "poli") {
-    //       import("./poli.js");
-    //     }
-    //   }
-    //   // Jika halaman petugas diload → load petugas.js
-    //   if (pageName === "petugas") {
-    //     if (pageName === "petugas") {
-    //       import("./petugas.js");
-    //     }
-    //   }
-    // })
+    })
     .catch((err) => {
       target.innerHTML = `<p style="padding:20px; color:red;">
           Halaman <strong>${pageName}</strong> tidak ditemukan.
       </p>`;
+      console.error("Error loadPage:", err);
     });
 }
 
