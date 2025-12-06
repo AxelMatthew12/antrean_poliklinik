@@ -74,15 +74,12 @@ class PoliCard extends StatelessWidget {
 
                 const SizedBox(height: 6),
 
-Text(
-  poli.deskripsi.length > 70
-      ? poli.deskripsi.substring(0, 70) + "..."
-      : poli.deskripsi,
-  style: const TextStyle(
-    fontSize: 14,
-    color: Colors.black87,
-  ),
-),
+                Text(
+                  poli.deskripsi.length > 70
+                      ? poli.deskripsi.substring(0, 70) + "..."
+                      : poli.deskripsi,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                ),
 
                 const SizedBox(height: 14),
 
@@ -93,10 +90,8 @@ Text(
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => DetailAntreanPage(
-                            poli: poli,
-                            userData: userData,
-                          ),
+                          builder: (_) =>
+                              DetailAntreanPage(poli: poli, userData: userData),
                         ),
                       );
                     },
@@ -117,7 +112,7 @@ Text(
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -197,10 +192,7 @@ class _KiosListAntreanState extends State<KiosListAntrean> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           itemCount: poliList.length,
           itemBuilder: (context, index) {
-            return PoliCard(
-              poli: poliList[index],
-              userData: widget.userData,
-            );
+            return PoliCard(poli: poliList[index], userData: widget.userData);
           },
         );
       },
@@ -237,7 +229,10 @@ class _KiosListAntreanState extends State<KiosListAntrean> {
           Text(
             "Pemeriksaan Pasien",
             style: TextStyle(
-                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue),
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
           ),
           Spacer(),
         ],

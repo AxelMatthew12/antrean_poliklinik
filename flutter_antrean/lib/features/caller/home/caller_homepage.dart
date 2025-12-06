@@ -1,9 +1,9 @@
-import 'package:antrean_poliklinik/features/caller/slide_gesture_wrapper.dart';
+import 'package:antrean_poliklinik/features/caller/gesture/slide_gesture_wrapper.dart';
 import 'package:flutter/material.dart';
-import 'caller_list_antrean.dart';
-import 'caller_profile.dart';
-import '../../widget/caller_bottom_nav.dart';
-import '../../widget/caller_list_menu.dart';
+import '../pages/antrean/caller_list_antrean.dart';
+import '../pages/profile/caller_profile.dart';
+import '../../../widget/caller_bottom_nav.dart';
+import '../../../widget/caller_list_menu.dart';
 
 class CallerPage extends StatefulWidget {
   final String uid;

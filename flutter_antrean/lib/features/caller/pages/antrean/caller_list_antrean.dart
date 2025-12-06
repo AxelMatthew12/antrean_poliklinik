@@ -1,5 +1,5 @@
-import 'package:antrean_poliklinik/features/caller/caller_antrean_card.dart';
-import 'package:antrean_poliklinik/features/caller/caller_antrean_detail.dart';
+import 'package:antrean_poliklinik/features/caller/pages/antrean/caller_antrean_card.dart';
+import 'package:antrean_poliklinik/features/caller/pages/antrean/caller_antrean_detail.dart';
 import 'package:antrean_poliklinik/features/caller/controllers/caller_controller.dart';
 import 'package:antrean_poliklinik/features/caller/models/antrean_model.dart';
 import 'package:antrean_poliklinik/widget/caller_list_menu.dart';
@@ -22,8 +22,9 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
   @override
   void initState() {
     super.initState();
-    antreanRef =
-        FirebaseDatabase.instance.ref("antrean").child(widget.layananID);
+    antreanRef = FirebaseDatabase.instance
+        .ref("antrean")
+        .child(widget.layananID);
   }
 
   /// STREAM ANTREAN
@@ -33,7 +34,11 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
       if (data == null) return [];
 
       return data.entries
-          .map((e) => AntreanModel.fromMap(e.key, e.value))
+          .map((e) {
+            final item = Map<String, dynamic>.from(e.value);
+
+            return AntreanModel.fromMap(e.key, item);
+          })
           .where((a) => a.status.toLowerCase() == status.toLowerCase())
           .toList();
     });
@@ -47,10 +52,9 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
     await antreanRef.child(antrean.nomor).update({"status": newStatus});
 
     // update untuk antrean_user
-    await FirebaseDatabase.instance
-        .ref("antrean_user")
-        .child(pasienUID)
-        .update({"status": newStatus});
+    await FirebaseDatabase.instance.ref("antrean_user").child(pasienUID).update(
+      {"status": newStatus},
+    );
   }
 
   /// POPUP KONFIRMASI
@@ -132,7 +136,7 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
 
   @override
   Widget build(BuildContext context) {
-    final caller = CallerController();
+    // final caller = CallerController();
 
     return SafeArea(
       child: Padding(
@@ -182,7 +186,7 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
                       String buttonText = "";
                       if (antrean.status == "menunggu") {
                         buttonText = "Panggil";
-                      } else if (antrean.status == "berjalan") {
+                      } else if (antrean.status == "dilayani") {
                         buttonText = "Selesai";
                       } else if (antrean.status == "selesai") {
                         buttonText = "Detail";
@@ -191,9 +195,9 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: CallerAntreanCard(
-                          poli: antrean.poli,
+                          poli: antrean.layananID,
                           nomor: antrean.nomor,
-                          waktu: antrean.waktu,
+                          waktu: antrean.waktu_ambil,
                           status: antrean.status,
                           buttonText: buttonText,
                           onPressed: () {
@@ -205,37 +209,53 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
                                 title: "Panggil Antrean",
                                 confirmText: "Ya, Panggil",
                                 onConfirm: () async {
-                                  // 1) Update display untuk TV + audio
-                                  await caller.updateDisplay(
-                                    antrean.nomor,
-                                    antrean.poli,
-                                  );
+                                  // 1) Update display TV + audio
+                                  // await caller.updateDisplay(
+                                  //   antrean.nomor,
+                                  //   antrean.poli,
+                                  // );
 
-                                  // 2) Update status antrean → dipanggil
-                                  await caller.updateStatusAntrean(
-                                    widget.layananID,
-                                    antrean.nomor,
-                                  );
-
-                                  // 3) Update status pasien → berjalan
-                                  await _updateStatus(antrean, "berjalan");
+                                  // 2) Update status antrean → dilayani
+                                  // await _updateStatus(antrean, "dilayani");
+                                  await antreanRef.child(antrean.nomor).update({
+                                    "status": "dilayani",
+                                    "waktu_panggil": DateTime.now()
+                                        .toIso8601String(),
+                                  });
+                                  await FirebaseDatabase.instance
+                                      .ref("antrean_user/${antrean.pasienUID}")
+                                      .update({
+                                        "status": "dilayani",
+                                        "waktu_panggil": DateTime.now()
+                                            .toIso8601String(),
+                                      });
                                 },
                               );
                             }
-
                             /// =============================
-                            /// BERJALAN → SELESAI
+                            /// dilayani → SELESAI
                             /// =============================
-                            else if (antrean.status == "berjalan") {
+                            else if (antrean.status == "dilayani") {
                               _showConfirmDialog(
                                 title: "Selesaikan Antrean",
                                 confirmText: "Ya, Selesai",
                                 onConfirm: () async {
-                                  await _updateStatus(antrean, "selesai");
+                                  // await _updateStatus(antrean, "selesai");
+                                  await antreanRef.child(antrean.nomor).update({
+                                    "status": "selesai",
+                                    "waktu_selesai": DateTime.now()
+                                        .toIso8601String(),
+                                  });
+                                  await FirebaseDatabase.instance
+                                      .ref("antrean_user/${antrean.pasienUID}")
+                                      .update({
+                                        "status": "selesai",
+                                        "waktu_selesai": DateTime.now()
+                                            .toIso8601String(),
+                                      });
                                 },
                               );
                             }
-
                             /// =============================
                             /// SELESAI → DETAIL
                             /// =============================
@@ -243,9 +263,8 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CallerDetailAntrean(
-                                    antrean: antrean,
-                                  ),
+                                  builder: (context) =>
+                                      CallerDetailAntrean(antrean: antrean),
                                 ),
                               );
                             }

@@ -58,7 +58,6 @@ class CallerDetailAntrean extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
                 /// ================= LOGO + NOMOR ANTREAN (SEJAJAR) =================
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -109,7 +108,7 @@ class CallerDetailAntrean extends StatelessWidget {
                   children: [
                     _pillBox(text: telepon, fontSize: 16),
                     const SizedBox(width: 10),
-                    _pillBox(text: antrean.poli, fontSize: 16),
+                    _pillBox(text: antrean.layananID, fontSize: 16),
                   ],
                 ),
 
@@ -122,7 +121,21 @@ class CallerDetailAntrean extends StatelessWidget {
                     children: [
                       _titleBlue("Detail Waktu Antrean"),
                       const SizedBox(height: 14),
-                      _rowBlue("Waktu Ambil", antrean.waktu, fontSize: 16),
+                      _rowBlue(
+                        "Waktu Ambil",
+                        antrean.waktu_ambil,
+                        fontSize: 16,
+                      ),
+                      _rowBlue(
+                        "Waktu Ambil",
+                        antrean.waktu_panggil,
+                        fontSize: 16,
+                      ),
+                      _rowBlue(
+                        "Waktu Ambil",
+                        antrean.waktu_selesai,
+                        fontSize: 16,
+                      ),
                       _rowBlue("Status", antrean.status, fontSize: 16),
                     ],
                   ),
@@ -207,10 +220,7 @@ class CallerDetailAntrean extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: RichText(
         text: TextSpan(
-          style: TextStyle(
-            fontSize: fontSize,
-            color: Color(0xFF2B6BFF),
-          ),
+          style: TextStyle(fontSize: fontSize, color: Color(0xFF2B6BFF)),
           children: [
             TextSpan(text: "$label : "),
             TextSpan(

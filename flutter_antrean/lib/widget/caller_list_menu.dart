@@ -30,9 +30,9 @@ class CallerListMenu extends StatelessWidget {
 
             // Tab "Berjalan"
             _TabItem(
-              title: "Berjalan",
-              isActive: activeTab == "Berjalan",
-              onTap: () => onTabChanged("Berjalan"),
+              title: "Dilayani",
+              isActive: activeTab == "Dilayani",
+              onTap: () => onTabChanged("Dilayani"),
             ),
 
             const SizedBox(width: 15),

@@ -2,7 +2,7 @@ import 'package:antrean_poliklinik/features/auth/animated_login_header.dart';
 import 'package:antrean_poliklinik/features/auth/register_page.dart';
 import 'package:antrean_poliklinik/features/auth/welcome_page.dart';
 import 'package:antrean_poliklinik/features/kios/home/homepage.dart';
-import 'package:antrean_poliklinik/features/caller/caller_homepage.dart';
+import 'package:antrean_poliklinik/features/caller/home/caller_homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -46,8 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color:
-                      isSuccess ? const Color(0xFF1E40AF) : Colors.red.shade700,
+                  color: isSuccess
+                      ? const Color(0xFF1E40AF)
+                      : Colors.red.shade700,
                 ),
               ),
               const SizedBox(height: 12),
@@ -58,15 +59,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isSuccess ? Color(0xFF2B6BFF) : Colors.red,
+                    backgroundColor: isSuccess ? Color(0xFF2B6BFF) : Colors.red,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
                   child: const Text("OK"),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -80,8 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     try {
-      final credential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
@@ -130,9 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (value['email'] == email) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (_) => HomePage(userData: value),
-            ),
+            MaterialPageRoute(builder: (_) => HomePage(userData: value)),
           );
           return;
         }
@@ -159,8 +156,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 children: [
                   IconButton(
-                    icon:
-                        const Icon(Icons.arrow_back_ios, color: Color(0xFF2B6BFF)),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Color(0xFF2B6BFF),
+                    ),
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
                   const Expanded(
@@ -188,9 +187,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Email',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16)),
+                    const Text(
+                      'Email',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: _emailController,
@@ -200,9 +203,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    const Text('Password',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16)),
+                    const Text(
+                      'Password',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 10),
 
                     Stack(
@@ -217,9 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         IconButton(
                           icon: Icon(
-                            _obscure
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            _obscure ? Icons.visibility_off : Icons.visibility,
                           ),
                           onPressed: _toggleObscure,
                         ),
@@ -296,8 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(50),
         borderSide: const BorderSide(color: Color(0xFF256EFF)),
       ),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
     );
   }
 }

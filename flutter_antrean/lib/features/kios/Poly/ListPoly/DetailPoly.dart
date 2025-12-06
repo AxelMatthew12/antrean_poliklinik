@@ -15,40 +15,10 @@ class DetailAntreanPage extends StatefulWidget {
 }
 
 class _DetailAntreanPageState extends State<DetailAntreanPage> {
+  String loketId = "-"; // <-- WAJIB disimpan
   String loketNama = "-";
   String petugasNama = "-";
   String statusLoket = "-";
-
-  // ===============================================================
-  // 🔵 FETCH DATA REALTIME DARI FIREBASE
-  // ===============================================================
-  Future<void> loadRealData() async {
-    final db = FirebaseDatabase.instance.ref();
-
-    final snapshotLoket = await db.child("loket").get();
-
-    for (var loket in snapshotLoket.children) {
-      final data = loket.value as Map;
-
-      if (data["layanan_id"] == widget.poli.id) {
-        setState(() {
-          loketNama = data["nama"] ?? "-";
-          statusLoket = data["status"] ?? "-";
-        });
-
-        String petugasId = data["petugas_id"];
-        final petugasSnap = await db.child("petugas").child(petugasId).get();
-
-        if (petugasSnap.exists) {
-          final petugasData = petugasSnap.value as Map;
-          setState(() {
-            petugasNama = petugasData["nama"] ?? "-";
-          });
-        }
-        break;
-      }
-    }
-  }
 
   @override
   void initState() {
@@ -57,120 +27,155 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
   }
 
   // ===============================================================
+  // 🔵 FETCH DATA LOKET + PETUGAS
+  // ===============================================================
+  Future<void> loadRealData() async {
+    final db = FirebaseDatabase.instance.ref();
+    final snapshotLoket = await db.child("loket").get();
+
+    for (var loket in snapshotLoket.children) {
+      final data = loket.value as Map;
+
+      if (data["layanan_id"] == widget.poli.id) {
+        setState(() {
+          loketId = loket.key ?? "-"; // <-- simpan ID loket (LKT01)
+          loketNama = data["nama"] ?? "-";
+          statusLoket = data["status"] ?? "-";
+        });
+
+        final petugasSnap = await db
+            .child("petugas")
+            .child(data["petugas_id"])
+            .get();
+        if (petugasSnap.exists) {
+          final petugasData = petugasSnap.value as Map;
+          setState(() => petugasNama = petugasData["nama"] ?? "-");
+        }
+        break;
+      }
+    }
+  }
+
+  // ===============================================================
   // 🔵 AMBIL NOMOR ANTREAN
   // ===============================================================
   Future<void> _ambilNomorAntrean(BuildContext context) async {
-  try {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-    final uid = user.uid;
-    final userRef = FirebaseDatabase.instance.ref("antrean_user/$uid");
-    final cek = await userRef.get();
+      final uid = user.uid;
+      final userRef = FirebaseDatabase.instance.ref("antrean_user/$uid");
+      final cek = await userRef.get();
 
-    // ============================================================
-    // 🔵 CEK ANTREAN USER — TAPI CEK STATUS BUKAN HANYA EXISTS
-    // ============================================================
+      // ============================================================
+      // 🔵 CEK ANTREAN USER (cek status, bukan hanya exists)
+      // ============================================================
 
-    if (cek.exists) {
-      final data = cek.value as Map;
-
-      // Jika status masih aktif → tidak boleh daftar
-      if (data["status"] != "selesai") {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text("Tidak Bisa Mendaftar"),
-            content: const Text("Anda sudah memiliki antrean aktif."),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              )
-            ],
-          ),
-        );
-        return;
-      }
-    }
-
-    // Jika status = selesai → boleh daftar antrean baru
-    // Lanjut proses pembuatan nomor antrean baru
-    // ============================================================
-
-    final controller = KiosController();
-    final nomor = await controller.ambilNomor(widget.poli.id, uid);
-
-    // Menyimpan antrean pada node poli
-    await FirebaseDatabase.instance
-        .ref("antrean/${widget.poli.id}/$nomor")
-        .set({
-      "nomor": nomor,
-      "pasien_uid": uid,
-      "status": "menunggu",
-      "waktu_ambil": DateTime.now().toIso8601String(),
-    });
-
-    // Menyimpan antrean user
-    await userRef.set({
-      "nomor": nomor,
-      "poli_id": widget.poli.id,
-      "status": "menunggu",
-    });
-
-    // ============================================================
-    // 🔵 Popup Success
-    // ============================================================
-
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle, color: Colors.blue, size: 60),
-              const SizedBox(height: 20),
-              const Text(
-                "Anda berhasil mendaftar antrean",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 17,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 28),
-              SizedBox(
-                width: 180,
-                child: OutlinedButton(
+      if (cek.exists) {
+        final data = cek.value as Map;
+        if (data["status"] != "selesai") {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Tidak Bisa Mendaftar"),
+              content: const Text("Anda masih memiliki antrean aktif."),
+              actions: [
+                TextButton(
                   onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.blue, width: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // ============================================================
+      // 🔵 SUDAH SELESAI → BOLEH AMBIL NOMOR BARU
+      // ============================================================
+      final controller = KiosController();
+      final nomor = await controller.ambilNomor(widget.poli.id, uid);
+
+      final poliId = widget.poli.id;
+
+      // Simpan ke antrean/<poli>/<nomor>
+      await FirebaseDatabase.instance.ref("antrean/$poliId/$nomor").set({
+        "nomor": nomor,
+        "layanan_id": poliId,
+        "loket_id": loketId,
+        "pasien_uid": uid,
+        "status": "menunggu",
+        "waktu_ambil": DateTime.now().toIso8601String(),
+        "waktu_panggil": "",
+        "waktu_selesai": "",
+      });
+
+      // Simpan ke antrean_user/<uid>
+      await userRef.set({
+        "nomor": nomor,
+        "layanan_id": poliId,
+        "loket_id": loketId,
+        "pasien_uid": uid,
+        "status": "menunggu",
+        "waktu_ambil": DateTime.now().toIso8601String(),
+        "waktu_panggil": "",
+        "waktu_selesai": "",
+      });
+
+      // ============================================================
+      // 🔵 Popup Success
+      // ============================================================
+
+      showDialog(
+        context: context,
+        builder: (_) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, color: Colors.blue, size: 60),
+                const SizedBox(height: 20),
+                const Text(
+                  "Anda berhasil mendaftar antrean",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: 180,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.blue, width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text(
+                      "Lanjut Antrean",
+                      style: TextStyle(color: Colors.blue, fontSize: 16),
                     ),
                   ),
-                  child: const Text(
-                    "Lanjut Antrean",
-                    style: TextStyle(color: Colors.blue, fontSize: 16),
-                  ),
                 ),
-              )
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  } catch (e) {
-    print("ERROR: $e");
+      );
+    } catch (e) {
+      print("ERROR: $e");
+    }
   }
-}
-
 
   // ===============================================================
   @override
@@ -253,7 +258,6 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                       ],
                     ),
                   ),
@@ -346,10 +350,7 @@ class _DetailAntreanPageState extends State<DetailAntreanPage> {
   }
 
   Widget _value(String text) {
-    return Text(
-      text,
-      style: const TextStyle(fontSize: 14),
-    );
+    return Text(text, style: const TextStyle(fontSize: 14));
   }
 
   Widget _statusChip(String status) {

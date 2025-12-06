@@ -13,11 +13,12 @@ class _AntreanPageState extends State<AntreanPage> {
   bool _isLoading = true;
 
   String _userNomor = "-";
-  String _userStatus = "-"; 
+  String _userStatus = "-";
   String _poliId = "-";
+  String _loketId = "-";
 
-  String _currentServed = "-"; 
-  int _position = 0; 
+  String _currentServed = "-";
+  int _position = 0;
 
   @override
   void initState() {
@@ -25,13 +26,13 @@ class _AntreanPageState extends State<AntreanPage> {
     _loadAntrean();
   }
 
-
   Future<void> _loadAntrean() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid ?? "";
 
-      final userSnap =
-          await FirebaseDatabase.instance.ref("antrean_user/$uid").get();
+      final userSnap = await FirebaseDatabase.instance
+          .ref("antrean_user/$uid")
+          .get();
 
       if (!userSnap.exists) {
         setState(() {
@@ -42,27 +43,26 @@ class _AntreanPageState extends State<AntreanPage> {
       }
 
       final data = userSnap.value as Map;
-      _poliId = data["poli_id"];
+      _poliId = data["layanan_id"];
       _userNomor = data["nomor"].toString();
       _userStatus = data["status"] ?? "-";
+      _loketId = data["loket_id"] ?? "-";
 
-if (_userStatus.toLowerCase() == "selesai") {
-  setState(() {
-    _userNomor = "-";
-    _userStatus = "Tidak ada antrean";
-    _currentServed = "-";
-    _position = 0;
-    _isLoading = false;
-  });
+      if (_userStatus.toLowerCase() == "selesai") {
+        setState(() {
+          _userNomor = "-";
+          _userStatus = "Tidak ada antrean";
+          _currentServed = "-";
+          _position = 0;
+          _isLoading = false;
+        });
 
-  return;
-}
+        return;
+      }
 
-
-
-  
-      final poliSnap =
-          await FirebaseDatabase.instance.ref("antrean/$_poliId").get();
+      final poliSnap = await FirebaseDatabase.instance
+          .ref("antrean/$_poliId")
+          .get();
 
       List antreanList = [];
       String served = "-";
@@ -100,7 +100,6 @@ if (_userStatus.toLowerCase() == "selesai") {
     }
   }
 
-
   Future<void> _showCancelDialog() async {
     return showDialog(
       context: context,
@@ -133,7 +132,6 @@ if (_userStatus.toLowerCase() == "selesai") {
 
                 Row(
                   children: [
-              
                     Expanded(
                       child: SizedBox(
                         height: 46,
@@ -159,7 +157,6 @@ if (_userStatus.toLowerCase() == "selesai") {
 
                     const SizedBox(width: 14),
 
-             
                     Expanded(
                       child: SizedBox(
                         height: 46,
@@ -167,16 +164,29 @@ if (_userStatus.toLowerCase() == "selesai") {
                           onPressed: () async {
                             Navigator.pop(context);
 
-                            final uid =
-                                FirebaseAuth.instance.currentUser!.uid;
+                            final uid = FirebaseAuth.instance.currentUser!.uid;
 
                             await FirebaseDatabase.instance
                                 .ref("antrean_user/$uid")
                                 .remove();
 
-                            await FirebaseDatabase.instance
-                                .ref("antrean/$_poliId/${_userNomor}")
-                                .remove();
+                            // await FirebaseDatabase.instance
+                            //     .ref("antrean/$_poliId/${_userNomor}")
+                            //     .remove();
+                            await FirebaseDatabase
+                                .instance //perbaikan untuk antrean
+                                .ref("antrean/$_poliId/$_userNomor")
+                                .set({
+                                  "nomor": _userNomor,
+                                  "layanan_id": _poliId, // WAJIB
+                                  "loket_id": _loketId, // WAJIB
+                                  "pasien_uid": uid,
+                                  "status": "menunggu",
+                                  "waktu_ambil": DateTime.now()
+                                      .toIso8601String(),
+                                  "waktu_panggil": "",
+                                  "waktu_selesai": "",
+                                });
 
                             setState(() {
                               _userNomor = "-";
@@ -209,7 +219,7 @@ if (_userStatus.toLowerCase() == "selesai") {
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -228,7 +238,6 @@ if (_userStatus.toLowerCase() == "selesai") {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-    
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
@@ -259,13 +268,12 @@ if (_userStatus.toLowerCase() == "selesai") {
                         const Text(
                           "Silakan menunggu giliran Anda",
                           style: TextStyle(color: Colors.white),
-                        )
+                        ),
                       ],
                     ),
                   ),
 
                   const SizedBox(height: 30),
-
 
                   Container(
                     width: double.infinity,
@@ -322,7 +330,9 @@ if (_userStatus.toLowerCase() == "selesai") {
                               onPressed: () => _showCancelDialog(),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(
-                                    color: Color(0xFF256EFF), width: 1.5),
+                                  color: Color(0xFF256EFF),
+                                  width: 1.5,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
