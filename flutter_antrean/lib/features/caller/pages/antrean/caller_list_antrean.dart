@@ -145,7 +145,7 @@ class _CallerListAntreanState extends State<CallerListAntrean> {
           children: [
             Center(
               child: Text(
-                "Profil Petugas",
+                "Antrean Pasien",
                 style: TextStyle(
                   fontSize: 24,
                   color: Color(0xFF256EFF),
