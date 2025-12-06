@@ -1,0 +1,145 @@
+/* ============================
+   RESET & GLOBAL
+============================ */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #f2f6fc;
+    font-family: "League Spartan", sans-serif;
+}
+
+/* Full container */
+.display-container {
+    width: 100%;
+    height: 100vh;
+    padding: 25px;
+    box-sizing: border-box;
+}
+
+/* ============================
+   GRID 2x2 POLI
+============================ */
+.poli-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 30px;
+    height: 100%;
+}
+
+/* ============================
+   CARD POLI
+============================ */
+.poli-section {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0px 6px 15px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============================
+   HEADER POLI
+============================ */
+.poli-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 26px;
+    color: #005bbb;
+    padding-bottom: 10px;
+}
+
+.poli-header i {
+    font-size: 28px;
+}
+
+/* ============================
+   ROW SEKARANG - SELANJUTNYA
+============================ */
+.antrian-row {
+    display: grid;
+    grid-template-columns: 1fr; /* hanya satu kolom */
+    flex: 1;
+}
+
+
+/* ============================
+   BOX ANTRIAN
+============================ */
+.antrian-box {
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.12);
+}
+
+.antrian-box.now {
+    background: #0a7aff;
+    color: white;
+}
+
+/* .antrian-box.next {
+    background: #ffffff;
+    color: #1458b3;
+    border: 3px solid #0a7aff;
+} */
+
+/* Label */
+.antrian-label {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+/* Nomor Antrian */
+.antrian-number {
+    font-size: 70px;
+    font-weight: 800;
+    margin: 15px 0;
+}
+
+/* Loket */
+.loket-info {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.now .loket-info {
+    background: rgba(0,0,0,0.2);
+    color: white;
+}
+
+.next .loket-info {
+    background: #eaf4ff;
+    color: #1458b3;
+}
+
+/* ============================
+   BLINK EFFECT
+============================ */
+.blink {
+    animation: blinkAnim 0.4s ease-in-out 3;
+}
+
+@keyframes blinkAnim {
+    50% { background-color: yellow; }
+}
+
+/* ============================
+   RESPONSIVE (optional)
+============================ */
+@media (max-width: 900px) {
+    .poli-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+}
