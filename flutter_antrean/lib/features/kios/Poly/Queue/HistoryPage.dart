@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:antrean_poliklinik/features/kios/Poly/Queue/DetailHistory.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -50,17 +51,16 @@ class _HistoryPageState extends State<HistoryPage> {
         }
       }
 
+      // Sorting menggunakan nomor antrean (B001, A009, dst)
       int extractNumber(String value) {
         final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
         return int.tryParse(digits) ?? 0;
       }
 
       temp.sort((a, b) {
-        // Urutkan berdasarkan nama poli
         int poliSort = a["poli_name"].compareTo(b["poli_name"]);
         if (poliSort != 0) return poliSort;
 
-        // Jika poli sama → urutkan nomor antrean berdasarkan angka
         int numA = extractNumber(a["nomor"]);
         int numB = extractNumber(b["nomor"]);
         return numA.compareTo(numB);
@@ -96,38 +96,41 @@ class _HistoryPageState extends State<HistoryPage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : historyList.isEmpty
-          ? const Center(
-              child: Text(
-                "Anda belum memiliki riwayat",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
+              ? const Center(
+                  child: Text(
+                    "Anda belum memiliki riwayat",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: Column(
+                    children: historyList.map((item) {
+                      return _HistoryCard(
+                        poliId: item["poli_id"],
+                        poliName: item["poli_name"],
+                        nomor: item["nomor"],
+                        description: item["deskripsi"],
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Column(
-                children: historyList.map((item) {
-                  return _HistoryCard(
-                    poliName: item["poli_name"],
-                    nomor: item["nomor"],
-                    description: item["deskripsi"],
-                  );
-                }).toList(),
-              ),
-            ),
     );
   }
 }
 
 class _HistoryCard extends StatelessWidget {
+  final String poliId;
   final String poliName;
   final String nomor;
   final String description;
 
   const _HistoryCard({
+    required this.poliId,
     required this.poliName,
     required this.nomor,
     required this.description,
@@ -188,12 +191,19 @@ class _HistoryCard extends StatelessWidget {
 
           Center(
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DetailHistoryPage(
+                      poliId: poliId,
+                      nomorAntrean: nomor,
+                    ),
+                  ),
+                );
+              },
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
                 side: const BorderSide(color: Color(0xFF256EFF), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),

@@ -12,19 +12,15 @@ class CustomBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width - 40;
-    double itemWidth = width / 3;
+    final double totalWidth = MediaQuery.of(context).size.width - 40;
+    final double itemWidth = totalWidth / 3;
 
-    double containerHeight = 70;
-    double circleSize = 44;
-
-    // posisi highlight bulat
-    double topPosition = (containerHeight - circleSize) / 2;
+    const double containerHeight = 70;
+    const double highlightSize = 48;
 
     return SafeArea(
       child: Container(
         margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 6),
         height: containerHeight,
         decoration: BoxDecoration(
           color: Colors.white,
@@ -32,22 +28,24 @@ class CustomBottomNav extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
+              blurRadius: 14,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Stack(
+          alignment: Alignment.center,
           children: [
-            // 🔵 HIGHLIGHT BULAT BIRU
+            // Highlight circle behind the active icon
             AnimatedPositioned(
-              duration: const Duration(milliseconds: 280),
+              duration: const Duration(milliseconds: 260),
               curve: Curves.easeOutCubic,
-              left: (itemWidth - circleSize) / 2.3 + (itemWidth * currentIndex),
-              top: topPosition,
+              left: (itemWidth * currentIndex) +
+                  (itemWidth / 2) -
+                  (highlightSize / 2),
               child: Container(
-                width: circleSize,
-                height: circleSize,
+                width: highlightSize,
+                height: highlightSize,
                 decoration: const BoxDecoration(
                   color: Color(0xFF256EFF),
                   shape: BoxShape.circle,
@@ -55,38 +53,37 @@ class CustomBottomNav extends StatelessWidget {
               ),
             ),
 
-            // 🔵 ICONS (HOME — CALENDAR — PROFILE)
+            // Bottom navigation icons
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _icon(Icons.home, 0), // kiri
-                _icon(Icons.calendar_today, 1), // tengah
-                _icon(Icons.person_outline, 2), // kanan
-              ],
+              children: List.generate(3, (index) {
+                final IconData icon = switch (index) {
+                  0 => Icons.home,
+                  1 => Icons.calendar_today,
+                  2 => Icons.person_outline,
+                  _ => Icons.home,
+                };
+
+                final bool isActive = index == currentIndex;
+
+                return SizedBox(
+                  width: itemWidth,
+                  height: containerHeight,
+                  child: GestureDetector(
+                    onTap: () => onTap(index),
+                    child: Center(
+                      child: Icon(
+                        icon,
+                        size: 26,
+                        color: isActive
+                            ? Colors.white
+                            : const Color(0xFF256EFF),
+                      ),
+                    ),
+                  ),
+                );
+              }),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _icon(IconData icon, int index) {
-    bool active = index == currentIndex;
-
-    return GestureDetector(
-      onTap: () => onTap(index),
-      child: SizedBox(
-        width: 70,
-        height: 70,
-        child: Center(
-          child: Transform.translate(
-            offset: const Offset(0, -1.5),
-            child: Icon(
-              icon,
-              size: 26,
-              color: active ? Colors.white : const Color(0xFF256EFF),
-            ),
-          ),
         ),
       ),
     );

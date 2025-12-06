@@ -4,8 +4,6 @@ import 'package:firebase_database/firebase_database.dart';
 
 class DeleteAccountService {
   // ============================================================
-  // 🔵 Popup Konfirmasi
-  // ============================================================
   Future<void> showDeleteAccountDialog(BuildContext context) async {
     return showDialog(
       context: context,
@@ -36,7 +34,6 @@ class DeleteAccountService {
 
                 Row(
                   children: [
-                    // ❌ TIDAK
                     Expanded(
                       child: SizedBox(
                         height: 48,
@@ -62,7 +59,7 @@ class DeleteAccountService {
 
                     const SizedBox(width: 16),
 
-                    // ✅ Ya Hapus
+                    //==========================================================
                     Expanded(
                       child: SizedBox(
                         height: 48,
@@ -98,9 +95,8 @@ class DeleteAccountService {
     );
   }
 
-  // ============================================================
-  // 🔵 Delete Account SAFE VERSION
-  // ============================================================
+
+// ============================================================
   Future<void> _deleteAccount(BuildContext context) async {
     // SIMPAN context awal → agar tidak error setelah dispose
     final navigator = Navigator.of(context);

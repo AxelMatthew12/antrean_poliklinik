@@ -17,21 +17,14 @@ class _PasswordManagementState extends State<PasswordManagement> {
   bool showNew = false;
   bool showConfirm = false;
 
-  // =========================================================
-  // 🔵 UPDATE PASSWORD DENGAN FIREBASE AUTH
-  // =========================================================
+  // Performs the password update through Firebase Auth
   Future<void> updatePassword() async {
     final currentPass = currentPassC.text.trim();
     final newPass = newPassC.text.trim();
     final confirmPass = confirmPassC.text.trim();
 
     if (newPass != confirmPass) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Password baru dan konfirmasi tidak sama."),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showMessage("Password baru dan konfirmasi tidak sama.", Colors.red);
       return;
     }
 
@@ -39,52 +32,40 @@ class _PasswordManagementState extends State<PasswordManagement> {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("User tidak ditemukan."),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showMessage("User tidak ditemukan.", Colors.red);
         return;
       }
 
-      // 1️⃣ RE-AUTHENTICATION
-      final cred = EmailAuthProvider.credential(
+      // Re-authentication
+      final credential = EmailAuthProvider.credential(
         email: user.email!,
         password: currentPass,
       );
+      await user.reauthenticateWithCredential(credential);
 
-      await user.reauthenticateWithCredential(cred);
-
-      // 2️⃣ UPDATE PASSWORD
+      // Update password
       await user.updatePassword(newPass);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Password berhasil diperbarui!"),
-          backgroundColor: Colors.blue,
-        ),
-      );
-
+      _showMessage("Password berhasil diperbarui!", Colors.blue);
       Navigator.pop(context);
 
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Gagal mengubah password: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showMessage("Gagal mengubah password: $e", Colors.red);
     }
   }
 
-  // =========================================================
-  // 🔵 PASSWORD FIELD WIDGET
-  // =========================================================
+  // Shows a Snackbar message
+  void _showMessage(String text, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(text), backgroundColor: color),
+    );
+  }
+
+  // Password input field component
   Widget passwordField({
     required String label,
     required TextEditingController controller,
-    required bool obscure,
+    required bool visible,
     required VoidCallback onToggle,
     Widget? extraWidget,
   }) {
@@ -100,7 +81,6 @@ class _PasswordManagementState extends State<PasswordManagement> {
           ),
         ),
         const SizedBox(height: 8),
-
         Container(
           decoration: BoxDecoration(
             color: const Color(0xFFEFF3FF),
@@ -111,7 +91,7 @@ class _PasswordManagementState extends State<PasswordManagement> {
               Expanded(
                 child: TextField(
                   controller: controller,
-                  obscureText: !obscure,
+                  obscureText: !visible,
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     contentPadding:
@@ -122,27 +102,23 @@ class _PasswordManagementState extends State<PasswordManagement> {
               IconButton(
                 onPressed: onToggle,
                 icon: Icon(
-                  obscure ? Icons.visibility : Icons.visibility_off,
+                  visible ? Icons.visibility : Icons.visibility_off,
                   color: Colors.black54,
                 ),
-              )
+              ),
             ],
           ),
         ),
-
         if (extraWidget != null) ...[
           const SizedBox(height: 5),
           extraWidget,
         ],
-
         const SizedBox(height: 24),
       ],
     );
   }
 
-  // =========================================================
-  // 🔵 UI
-  // =========================================================
+  // Main UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,39 +129,15 @@ class _PasswordManagementState extends State<PasswordManagement> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Color(0xFF256EFF),
-                      size: 26,
-                    ),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        "Manajer Password",
-                        style: TextStyle(
-                          fontSize: 22,
-                          color: Color(0xFF256EFF),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 40),
-                ],
-              ),
+              _buildHeader(),
 
               const SizedBox(height: 30),
 
-              // Password lama
+              // Current password
               passwordField(
                 label: "Password Saat Ini",
                 controller: currentPassC,
-                obscure: showCurrent,
+                visible: showCurrent,
                 onToggle: () => setState(() => showCurrent = !showCurrent),
                 extraWidget: Align(
                   alignment: Alignment.centerRight,
@@ -202,24 +154,25 @@ class _PasswordManagementState extends State<PasswordManagement> {
                 ),
               ),
 
-              // Password baru
+              // New password
               passwordField(
                 label: "Password Baru",
                 controller: newPassC,
-                obscure: showNew,
+                visible: showNew,
                 onToggle: () => setState(() => showNew = !showNew),
               ),
 
-              // Konfirmasi password
+              // Confirm password
               passwordField(
                 label: "Konfirmasi Password Baru",
                 controller: confirmPassC,
-                obscure: showConfirm,
+                visible: showConfirm,
                 onToggle: () => setState(() => showConfirm = !showConfirm),
               ),
 
               const SizedBox(height: 20),
 
+              // Submit button
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -250,6 +203,35 @@ class _PasswordManagementState extends State<PasswordManagement> {
           ),
         ),
       ),
+    );
+  }
+
+  // Header layout
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF256EFF),
+            size: 26,
+          ),
+        ),
+        const Expanded(
+          child: Center(
+            child: Text(
+              "Manajer Password",
+              style: TextStyle(
+                fontSize: 22,
+                color: Color(0xFF256EFF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 40),
+      ],
     );
   }
 }

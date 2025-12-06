@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-// IMPORT HALAMAN TUJUAN
-import 'package:antrean_poliklinik/features/kios/Settings/NotificationSetting.dart';
+// Target pages
+import 'package:antrean_poliklinik/features/kios/Settings/Notification/NotificationSetting.dart';
 import 'package:antrean_poliklinik/features/kios/Settings/PasswordManagement.dart';
 import 'package:antrean_poliklinik/features/kios/Settings/DeleteAccount.dart';
 
@@ -18,36 +18,11 @@ class SettingProfile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ==== CUSTOM APP BAR ====
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Color(0xFF256EFF),
-                      size: 26,
-                    ),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        "Pengaturan",
-                        style: TextStyle(
-                          fontSize: 22,
-                          color: Color(0xFF256EFF),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 40), // agar judul tetap center
-                ],
-              ),
-
+              // App header
+              _buildHeader(context),
               const SizedBox(height: 40),
 
-              // ==== MENU LIST ====
+              // Menu items
               _menuItem(
                 icon: Icons.lightbulb_outline,
                 title: "Pengaturan Notifikasi",
@@ -60,7 +35,6 @@ class SettingProfile extends StatelessWidget {
                   );
                 },
               ),
-
               _menuItem(
                 icon: Icons.vpn_key_outlined,
                 title: "Manajer Password",
@@ -73,7 +47,6 @@ class SettingProfile extends StatelessWidget {
                   );
                 },
               ),
-
               _menuItem(
                 icon: Icons.person_outline,
                 title: "Hapus Akun",
@@ -88,9 +61,36 @@ class SettingProfile extends StatelessWidget {
     );
   }
 
-  // ======================================================
-  // 🔹 MENU ITEM — BESAR, CLEAR, ELEGAN
-  // ======================================================
+  // Builds the custom app bar layout
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF256EFF),
+            size: 26,
+          ),
+        ),
+        const Expanded(
+          child: Center(
+            child: Text(
+              "Pengaturan",
+              style: TextStyle(
+                fontSize: 22,
+                color: Color(0xFF256EFF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 40), // Keeps title centered
+      ],
+    );
+  }
+
+  // Menu item component
   Widget _menuItem({
     required IconData icon,
     required String title,
@@ -102,7 +102,7 @@ class SettingProfile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(
-          height: 60, // ukuran diperbesar
+          height: 60,
           child: Row(
             children: [
               Icon(
@@ -111,7 +111,6 @@ class SettingProfile extends StatelessWidget {
                 size: 30,
               ),
               const SizedBox(width: 20),
-
               Expanded(
                 child: Text(
                   title,
@@ -122,7 +121,6 @@ class SettingProfile extends StatelessWidget {
                   ),
                 ),
               ),
-
               const Icon(
                 Icons.arrow_forward_ios,
                 color: Colors.black45,

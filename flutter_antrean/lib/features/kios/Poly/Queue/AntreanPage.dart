@@ -8,15 +8,12 @@ class AntreanPage extends StatefulWidget {
   @override
   State<AntreanPage> createState() => _AntreanPageState();
 }
-
 class _AntreanPageState extends State<AntreanPage> {
   bool _isLoading = true;
-
   String _userNomor = "-";
   String _userStatus = "-";
   String _poliId = "-";
   String _loketId = "-";
-
   String _currentServed = "-";
   int _position = 0;
 
@@ -29,7 +26,6 @@ class _AntreanPageState extends State<AntreanPage> {
   Future<void> _loadAntrean() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid ?? "";
-
       final userSnap = await FirebaseDatabase.instance
           .ref("antrean_user/$uid")
           .get();
@@ -56,30 +52,24 @@ class _AntreanPageState extends State<AntreanPage> {
           _position = 0;
           _isLoading = false;
         });
-
         return;
       }
-
       final poliSnap = await FirebaseDatabase.instance
           .ref("antrean/$_poliId")
           .get();
-
       List antreanList = [];
       String served = "-";
-
       if (poliSnap.exists) {
         for (var child in poliSnap.children) {
           final a = child.value as Map;
           antreanList.add(a);
-
-          if (a["status"] == "berjalan") {
+          if (a["status"] == "dilayani") {
             served = a["nomor"].toString();
           }
         }
       }
 
       antreanList.sort((a, b) => a["nomor"].compareTo(b["nomor"]));
-
       int pos = 0;
       for (var a in antreanList) {
         if (a["status"] == "menunggu") {
@@ -87,7 +77,6 @@ class _AntreanPageState extends State<AntreanPage> {
           if (a["nomor"].toString() == _userNomor) break;
         }
       }
-
       setState(() {
         _currentServed = served;
         _position = pos;
@@ -174,12 +163,12 @@ class _AntreanPageState extends State<AntreanPage> {
                             //     .ref("antrean/$_poliId/${_userNomor}")
                             //     .remove();
                             await FirebaseDatabase
-                                .instance //perbaikan untuk antrean
+                                .instance 
                                 .ref("antrean/$_poliId/$_userNomor")
                                 .set({
                                   "nomor": _userNomor,
-                                  "layanan_id": _poliId, // WAJIB
-                                  "loket_id": _loketId, // WAJIB
+                                  "layanan_id": _poliId, 
+                                  "loket_id": _loketId, 
                                   "pasien_uid": uid,
                                   "status": "menunggu",
                                   "waktu_ambil": DateTime.now()

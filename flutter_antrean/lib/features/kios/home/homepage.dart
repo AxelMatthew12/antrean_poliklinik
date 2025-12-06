@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-
 import 'package:antrean_poliklinik/features/kios/Profile/dashboardprofile.dart';
 import 'package:antrean_poliklinik/widget/kios_bottom_nav.dart';
 import 'package:antrean_poliklinik/features/kios/Poly/ListPoly/listAppointment.dart';
-import 'package:antrean_poliklinik/features/kios/Settings/SettingProfile.dart';
+import 'package:antrean_poliklinik/widget/kios_header.dart';
+import 'package:antrean_poliklinik/features/kios/Poly/Queue/DetailHistory.dart';
+import 'package:antrean_poliklinik/features/kios/Settings/Notification/notification_alert.dart';
 
 class HomePage extends StatefulWidget {
   final Map? userData;
@@ -21,27 +22,69 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   Map? userData;
-
   bool isLoadingHistory = true;
   List<Map> recentHistory = [];
 
   @override
   void initState() {
     super.initState();
+
     userData = widget.userData;
-    _loadRecentHistory();
+
+    /// Load data user terbaru
+    _loadUserData();
+
+    /// Start realtime listener for history
+    _listenRecentHistory();
+
+    /// Start popup notification listener — hanya di HomePage!
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationAlert.startListening(
+        context: context,
+        notifEnabled: true,
+      );
+    });
   }
 
-  Future<void> _loadRecentHistory() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      final antreanRef = FirebaseDatabase.instance.ref("antrean");
+  // ============================================================
+  // 🔥 LOAD USER DATA TERBARU DARI FIREBASE
+  // ============================================================
+  Future<void> _loadUserData() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final pasienRef = FirebaseDatabase.instance.ref("pasien");
+    final snapshot = await pasienRef.get();
 
-      final snapshot = await antreanRef.get();
+    if (snapshot.exists) {
+      for (var child in snapshot.children) {
+        final d = Map<String, dynamic>.from(child.value as Map);
+
+        if (d["uid"] == uid) {
+          setState(() {
+            userData = d;
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  /// ============================================================
+  /// 🔥 LISTENER DATA RIWAYAT REALTIME
+  /// ============================================================
+  void _listenRecentHistory() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final antreanRef = FirebaseDatabase.instance.ref("antrean");
+
+    antreanRef.onValue.listen((event) {
+      if (!mounted) return;
+
       List<Map> temp = [];
+      final snapshot = event.snapshot;
 
       if (snapshot.exists) {
         for (var poliNode in snapshot.children) {
+          String poliId = poliNode.key ?? "-";
+
           for (var nomorNode in poliNode.children) {
             if (nomorNode.value is! Map) continue;
 
@@ -49,9 +92,10 @@ class _HomePageState extends State<HomePage> {
 
             if (data["pasien_uid"] == uid && data["status"] == "selesai") {
               temp.add({
-                "poli": poliNode.key,
+                "poli_id": poliId,
+                "poli_name": _formatPoliName(poliId),
                 "nomor": data["nomor"].toString(),
-                "timestamp": data["timestamp"] ?? 0,
+                "waktu_selesai": data["waktu_selesai"] ?? "",
                 "deskripsi": "Pemeriksaan telah selesai.",
               });
             }
@@ -59,36 +103,37 @@ class _HomePageState extends State<HomePage> {
         }
       }
 
-      // Jika tidak ada timestamp → sort berdasarkan nomor
       temp.sort((a, b) {
-        int t1 = a["timestamp"] ?? 0;
-        int t2 = b["timestamp"] ?? 0;
-
-        if (t1 != 0 && t2 != 0) {
-          return t2.compareTo(t1); // sort berdasarkan timestamp
-        }
-
-        // fallback: sort berdasarkan nomor antrean
-        return a["nomor"].compareTo(b["nomor"]);
+        final tA = DateTime.tryParse(a["waktu_selesai"] ?? "") ?? DateTime(2000);
+        final tB = DateTime.tryParse(b["waktu_selesai"] ?? "") ?? DateTime(2000);
+        return tB.compareTo(tA);
       });
 
-      // ambil hanya 3 riwayat
-      final limited = temp.length > 3 ? temp.sublist(0, 3) : temp;
+      final latest3 = temp.length > 3 ? temp.sublist(0, 3) : temp;
 
       setState(() {
-        recentHistory = limited;
+        recentHistory = latest3;
         isLoadingHistory = false;
       });
-    } catch (e) {
-      print("ERROR load history homepage: $e");
-      setState(() => isLoadingHistory = false);
+    });
+  }
+
+  /// Format nama poli
+  String _formatPoliName(String id) {
+    switch (id) {
+      case "poli_umum":
+        return "Poli Umum";
+      case "poli_gigi":
+        return "Poli Gigi";
+      case "poli_anak":
+        return "Poli Anak";
+      default:
+        return id;
     }
   }
 
-  // ================== NAVIGATION ==================
   void _onNavTap(int index) {
     setState(() => _selectedIndex = index);
-
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
@@ -96,32 +141,36 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ================== UI BUILD ==================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _selectedIndex,
         onTap: _onNavTap,
       ),
-
       body: PageView(
         controller: _pageController,
         physics: const BouncingScrollPhysics(),
         onPageChanged: (i) => setState(() => _selectedIndex = i),
-        // Menu list route
         children: [
           _homePageContent(),
+
           const KiosListAntrean(),
-          DashboardProfile(userData: userData),
+
+          /// DashboardProfile sekarang ada callback refresh
+          DashboardProfile(
+            userData: userData,
+            onUpdate: _loadUserData, // 🔥 HOME AUTO REFRESH NAMA
+          ),
         ],
       ),
     );
   }
 
-  // ================== HOME PAGE CONTENT ==================
+  /// ============================================================
+  /// HOME UI
+  /// ============================================================
   Widget _homePageContent() {
     return SafeArea(
       child: Padding(
@@ -129,7 +178,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _header(),
+            KiosHeaderWidget(userData: userData),
 
             const SizedBox(height: 20),
 
@@ -148,125 +197,46 @@ class _HomePageState extends State<HomePage> {
               child: isLoadingHistory
                   ? const Center(child: CircularProgressIndicator())
                   : recentHistory.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "Belum ada riwayat",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    )
-                  : ListView(
-                      children: recentHistory
-                          .map(
-                            (item) => HistoryCard(
-                              poliName: item["poli"],
-                              nomor: item["nomor"],
-                              description: item["deskripsi"],
+                      ? const Center(
+                          child: Text(
+                            "Belum ada riwayat",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                             ),
-                          )
-                          .toList(),
-                    ),
+                          ),
+                        )
+                      : ListView(
+                          children: recentHistory.map((item) {
+                            return HistoryCard(
+                              poliId: item["poli_id"] ?? "-",
+                              poliName: item["poli_name"] ?? "-",
+                              nomor: item["nomor"] ?? "-",
+                              description: item["deskripsi"] ?? "",
+                            );
+                          }).toList(),
+                        ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // ================= HEADER ==================
-  Widget _header() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            // FIX AVATAR AGAR TIDAK ERROR ASSET
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: Colors.blue.shade100,
-              backgroundImage:
-                  (userData?['foto'] != null &&
-                      userData!['foto'].toString().isNotEmpty)
-                  ? NetworkImage(userData!['foto'])
-                  : null,
-              child:
-                  (userData?['foto'] == null ||
-                      userData!['foto'].toString().isEmpty)
-                  ? const Icon(Icons.person, color: Colors.white)
-                  : null,
-            ),
-
-            const SizedBox(width: 12),
-
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Hi, WelcomeBack",
-                  style: TextStyle(color: Colors.blueGrey, fontSize: 12),
-                ),
-                Text(
-                  userData?['nama'] ?? "No Name",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        Row(
-          children: [
-            _topIcon(Icons.notifications_none),
-            const SizedBox(width: 10),
-            _topIcon(
-              Icons.settings,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingProfile()),
-                );
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // ================= ICON HEADER ==================
-  Widget _topIcon(IconData icon, {VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(50),
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: const Color.fromARGB(255, 69, 163, 239),
-            width: 1,
-          ),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 18, color: Colors.black),
       ),
     );
   }
 }
 
+// ===================================================================== //
+//                            HISTORY CARD                               //
+// ===================================================================== //
 class HistoryCard extends StatelessWidget {
+  final String poliId;
   final String poliName;
   final String nomor;
   final String description;
 
   const HistoryCard({
     super.key,
+    required this.poliId,
     required this.poliName,
     required this.nomor,
     required this.description,
@@ -310,7 +280,6 @@ class HistoryCard extends StatelessWidget {
           const SizedBox(height: 14),
 
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(Icons.history, size: 50, color: Color(0xFF256EFF)),
               const SizedBox(width: 14),
@@ -327,12 +296,20 @@ class HistoryCard extends StatelessWidget {
 
           Center(
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DetailHistoryPage(
+                      poliId: poliId,
+                      nomorAntrean: nomor,
+                    ),
+                  ),
+                );
+              },
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 8,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
                 side: const BorderSide(color: Color(0xFF256EFF), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
