@@ -1,18 +1,29 @@
-<style>
-    /* Blink effect */
-    .blink {
-        animation: blinkAnim 0.4s ease-in-out 3;
-    }
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Display Antrian</title>
 
-    @keyframes blinkAnim {
-        50% { background-color: yellow; }
-    }
+    <link rel="stylesheet" href="style.css">
 
-    /* Tambahan kecil agar efek blink lebih halus */
-    .antrian-number {
-        transition: background-color 0.2s;
-    }
-</style>
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* === BLINK EFFECT === */
+        .blink {
+            animation: blinkAnim 0.4s ease-in-out 3;
+        }
+
+        @keyframes blinkAnim {
+            50% {
+                background-color: yellow;
+            }
+        }
+    </style>
+
+</head>
+<body>
 
 <div class="display-container">
 
@@ -31,6 +42,12 @@
                     <div class="antrian-number" id="umum-sekarang">-</div>
                     <div class="loket-info" id="umum-loket-sekarang">LOKET -</div>
                 </div>
+
+                <div class="antrian-box next">
+                    <div class="antrian-label">SELANJUTNYA</div>
+                    <div class="antrian-number" id="umum-selanjutnya">-</div>
+                    <div class="loket-info" id="umum-loket-selanjutnya">LOKET -</div>
+                </div>
             </div>
         </div>
 
@@ -46,6 +63,12 @@
                     <div class="antrian-label">SEKARANG</div>
                     <div class="antrian-number" id="gigi-sekarang">-</div>
                     <div class="loket-info" id="gigi-loket-sekarang">LOKET -</div>
+                </div>
+
+                <div class="antrian-box next">
+                    <div class="antrian-label">SELANJUTNYA</div>
+                    <div class="antrian-number" id="gigi-selanjutnya">-</div>
+                    <div class="loket-info" id="gigi-loket-selanjutnya">LOKET -</div>
                 </div>
             </div>
         </div>
@@ -63,6 +86,12 @@
                     <div class="antrian-number" id="anak-sekarang">-</div>
                     <div class="loket-info" id="anak-loket-sekarang">LOKET -</div>
                 </div>
+
+                <div class="antrian-box next">
+                    <div class="antrian-label">SELANJUTNYA</div>
+                    <div class="antrian-number" id="anak-selanjutnya">-</div>
+                    <div class="loket-info" id="anak-loket-selanjutnya">LOKET -</div>
+                </div>
             </div>
         </div>
 
@@ -79,8 +108,20 @@
                     <div class="antrian-number" id="bedah-sekarang">-</div>
                     <div class="loket-info" id="bedah-loket-sekarang">LOKET -</div>
                 </div>
+
+                <div class="antrian-box next">
+                    <div class="antrian-label">SELANJUTNYA</div>
+                    <div class="antrian-number" id="bedah-selanjutnya">-</div>
+                    <div class="loket-info" id="bedah-loket-selanjutnya">LOKET -</div>
+                </div>
             </div>
         </div>
 
     </div>
+
 </div>
+
+<script type="module" src="display.js"></script>
+
+</body>
+</html>
