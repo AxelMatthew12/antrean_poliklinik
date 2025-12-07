@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ContactUsPage extends StatefulWidget {
   const ContactUsPage({super.key});
@@ -8,8 +9,21 @@ class ContactUsPage extends StatefulWidget {
 }
 
 class _ContactUsPageState extends State<ContactUsPage> {
-  int selectedTab = 0;      // Tracks active tab (0 = FAQ, 1 = Contact)
-  int previousTab = 0;      // Tracks previous tab for slide direction
+  int selectedTab = 0; // Tracks active tab (0 = FAQ, 1 = Contact)
+  int previousTab = 0; // Tracks previous tab for slide direction
+
+  int? _expandedIndex; // menyimpan index card yang dibuka
+
+  // bagian call center
+  Future<void> _callNumber(String phoneNumber) async {
+    final Uri url = Uri(scheme: 'tel', path: phoneNumber);
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      print("Tidak dapat membuka aplikasi telepon.");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +42,34 @@ class _ContactUsPageState extends State<ContactUsPage> {
             // Description text section
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Text(
-                "Bagaimana Kami Dapat Membantu Kamu?\n"
-                "Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  height: 1.4,
-                ),
+              child: Column(
+                children: [
+                  // JUDUL (lebih tebal)
+                  Text(
+                    "Bagaimana Kami Dapat Membantu Kamu?",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold, // TEKS LEBIH TEBAL
+                      height: 1.4,
+                    ),
+                  ),
+
+                  SizedBox(height: 6),
+
+                  // DESKRIPSI (lebih ringan)
+                  Text(
+                    "Panduan aplikasi dan info layanan tersedia di sini. Pilih kategori bantuan untuk melanjutkan.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -50,7 +84,10 @@ class _ContactUsPageState extends State<ContactUsPage> {
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 20,
+                ),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
@@ -107,10 +144,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
         ),
         padding: const EdgeInsets.all(6),
         child: Row(
-          children: [
-            _tabButton("FAQ", 0),
-            _tabButton("Kontak Kami", 1),
-          ],
+          children: [_tabButton("FAQ", 0), _tabButton("Kontak Kami", 1)],
         ),
       ),
     );
@@ -134,7 +168,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: active ? const Color(0xFF256EFF) : const Color(0xFFE5E9FF),
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(50),
           ),
           child: Center(
             child: Text(
@@ -167,10 +201,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
         return SlideTransition(
           position: offsetAnimation,
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
+          child: FadeTransition(opacity: animation, child: child),
         );
       },
       child: selectedTab == 0
@@ -182,49 +213,117 @@ class _ContactUsPageState extends State<ContactUsPage> {
   // -------------------------------------------------------------
   // FAQ content list
   // -------------------------------------------------------------
-  Widget _faqContent({Key? key}) {
-    final faqItems = [
-      "Apa itu Click Queue?",
-      "Lorem ipsum dolor sit amet?",
-      "Bagaimana cara mengambil antrean?",
-      "Apa manfaat menggunakan aplikasi ini?",
-    ];
 
+  // tambahan data faq
+  final faqItems = [
+    {
+      "title": "Apa itu klik Antri?",
+      "desc":
+          "Klik Antri adalah aplikasi antrean digital Poliklinik POLINEMA yang mempermudah pasien untuk mengambil nomor antrean secara online.",
+    },
+    {
+      "title": "Alamat Poliklinik POLINEMA?",
+      "desc":
+          "Jl. MT. Haryono No.72, Jatimulyo, Lowokwaru, Kota Malang, Jawa Timur 65145.",
+    },
+    {
+      "title": "Bagaimana cara mengambil antrean?",
+      "desc":
+          "1. Masuk ke aplikasi\n"
+          "2. pilih menu pemeriksaan pasien\n"
+          "3. pilih layanan poliklinik\n"
+          "4. klik tombol informasi\n"
+          "5. kemudian tekan tombol 'Ambil Antrean Poli'\n"
+          "6. Kembali dan Masuk ke navigasi Antreanv\n"
+          "7. Nomor antrean akan muncul otomatis.",
+    },
+    {
+      "title": "Apa manfaat menggunakan aplikasi ini?",
+      "desc":
+          "Menghemat waktu, mengurangi antrean fisik, dan memudahkan pasien melacak progres antrean secara real-time.",
+    },
+  ];
+
+  Widget _faqContent({Key? key}) {
     return ListView.separated(
       key: key,
       itemCount: faqItems.length,
       separatorBuilder: (_, __) => const SizedBox(height: 14),
-      itemBuilder: (_, index) => _faqItem(faqItems[index]),
+      itemBuilder: (_, index) {
+        final item = faqItems[index];
+        return _faqItem(
+          title: item["title"]!,
+          desc: item["desc"]!,
+          isExpanded: _expandedIndex == index,
+          onTap: () {
+            setState(() {
+              _expandedIndex = (_expandedIndex == index) ? null : index;
+            });
+          },
+        );
+      },
     );
   }
 
   // -------------------------------------------------------------
   // Single FAQ card item
   // -------------------------------------------------------------
-  Widget _faqItem(String title) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF256EFF),
-          width: 1.4,
+  Widget _faqItem({
+    required String title,
+    required String desc,
+    required bool isExpanded,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF256EFF), width: 1.4),
         ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-                color: Color(0xFF256EFF),
-              ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // HEADER
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Color(0xFF256EFF),
+                    ),
+                  ),
+                ),
+                Icon(
+                  isExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  size: 22,
+                  color: const Color(0xFF256EFF),
+                ),
+              ],
             ),
-          ),
-          const Icon(Icons.arrow_forward_ios, size: 18, color: Color(0xFF256EFF)),
-        ],
+
+            // DESKRIPSI (muncul saat expanded)
+            if (isExpanded) ...[
+              const SizedBox(height: 10),
+              Text(
+                desc,
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.4,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -234,11 +333,12 @@ class _ContactUsPageState extends State<ContactUsPage> {
   // -------------------------------------------------------------
   Widget _contactContent({Key? key}) {
     final items = [
-      {"title": "Customer Service", "icon": Icons.support_agent},
-      {"title": "Website", "icon": Icons.language},
-      {"title": "WhatsApp", "icon": Icons.chat},
-      {"title": "Instagram", "icon": Icons.camera_alt},
-      {"title": "Facebook", "icon": Icons.facebook},
+      // {"title": "Customer Service", "icon": Icons.support_agent},
+      // {"title": "Website", "icon": Icons.language},
+      // {"title": "WhatsApp", "icon": Icons.chat},
+      // {"title": "Instagram", "icon": Icons.camera_alt},
+      // {"title": "Facebook", "icon": Icons.facebook},
+      {"title": "Call Center Poliklinik", "icon": Icons.call},
     ];
 
     return ListView.separated(
@@ -256,35 +356,70 @@ class _ContactUsPageState extends State<ContactUsPage> {
   // Single Contact card item
   // -------------------------------------------------------------
   Widget _contactItem(String title, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF256EFF), width: 1.4),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(9),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE8F1FF),
-              shape: BoxShape.circle,
+    final nomorTelepon = "0341-404424";
+    final isCallCenter = title == "Call Center Poliklinik";
+
+    return InkWell(
+      onTap: () {
+        if (isCallCenter) {
+          _callNumber(nomorTelepon);
+        }
+        // Tambahkan onTap lain kalau mau untuk menu lain
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF256EFF), width: 1.4),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE8F1FF),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Color(0xFF256EFF), size: 22),
             ),
-            child: Icon(icon, color: Color(0xFF256EFF), size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF256EFF),
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF256EFF),
+                    ),
+                  ),
+                  if (isCallCenter)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Text(
+                        nomorTelepon,
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontSize: 13.5,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
-          const Icon(Icons.arrow_forward_ios, size: 18, color: Color(0xFF256EFF)),
-        ],
+
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 18,
+              color: Color(0xFF256EFF),
+            ),
+          ],
+        ),
       ),
     );
   }
