@@ -166,7 +166,7 @@ class _GreetingPageState extends State<GreetingPage>
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     child: Text(
-                      "Aplikasi Antrean Poliklinik",
+                      "Aplikasi Antrean Poliklinik POLINEMA",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -222,11 +222,8 @@ class _GreetingPageState extends State<GreetingPage>
             ).animate(
               CurvedAnimation(parent: animation, curve: Curves.easeOutQuart),
             );
-        return SlideTransition(
-          position: slideIn,
-          child: child,
-            );
-          },
-        );
-       }
-    }
+        return SlideTransition(position: slideIn, child: child);
+      },
+    );
+  }
+}

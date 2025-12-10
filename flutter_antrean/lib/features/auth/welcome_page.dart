@@ -197,7 +197,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                     vertical: 5,
                                   ),
                                   child: Text(
-                                    "Aplikasi Antrean Poliklinik",
+                                    "Aplikasi Antrean Poliklinik POLINEMA",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 13,

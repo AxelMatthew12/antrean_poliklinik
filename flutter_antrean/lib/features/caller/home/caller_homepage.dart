@@ -1,4 +1,5 @@
 import 'package:antrean_poliklinik/features/caller/gesture/slide_gesture_wrapper.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import '../pages/antrean/caller_list_antrean.dart';
 import '../pages/profile/caller_profile.dart';
@@ -28,17 +29,55 @@ class _CallerPageState extends State<CallerPage> {
 
   late PageController _pageController;
 
+  // modifikasi generate poli
+  Future<Map<String, String>> loadLoketToPoli() async {
+    final db = FirebaseDatabase.instance.ref("loket");
+    final snap = await db.get();
+
+    final Map<String, String> map = {};
+
+    if (snap.exists) {
+      for (var child in snap.children) {
+        final loketID = child.key; // contoh: LKT01
+        final data = child.value;
+
+        if (loketID != null && data is Map) {
+          final layananID = data["layanan_id"];
+          if (layananID is String) {
+            map[loketID] = layananID; // contoh: POLI_UMUM
+          }
+        }
+      }
+    }
+
+    return map;
+  }
+
   /// Loket → Poli
-  final Map<String, String> loketToPoli = {
-    "LKT01": "POLI_UMUM",
-    "LKT02": "POLI_GIGI",
-    "LKT03": "POLI_ANAK",
-  };
+  // final Map<String, String> loketToPoli = {
+  //   "LKT01": "POLI_UMUM",
+  //   "LKT02": "POLI_GIGI",
+  //   "LKT03": "POLI_ANAK",
+  //   "LKT04": "POLI_BEDAH",
+  // };
+  Map<String, String> loketToPoli = {};
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _pageController = PageController(initialPage: _selectedIndex);
+  // }
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _selectedIndex);
+
+    loadLoketToPoli().then((map) {
+      setState(() {
+        loketToPoli = map;
+      });
+    });
   }
 
   /// Pindah halaman dengan animasi slide
