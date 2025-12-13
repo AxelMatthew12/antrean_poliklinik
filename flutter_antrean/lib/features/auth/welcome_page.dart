@@ -237,6 +237,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             // TOMBOL LOGIN (MODIFIKASI)
             // ============================
             Padding(
+              // key: Key('btn_masuk'),
               padding: const EdgeInsets.only(left: 60, right: 60, bottom: 8),
               child: _buildAnimatedButton(
                 text: "Masuk",
@@ -254,6 +255,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             // TOMBOL DAFTAR (MODIFIKASI)
             // ============================
             Padding(
+              // key: Key('btn_daftar'),
               padding: const EdgeInsets.only(left: 60, right: 60, bottom: 30),
               child: _buildAnimatedButton(
                 text: "Daftar",
