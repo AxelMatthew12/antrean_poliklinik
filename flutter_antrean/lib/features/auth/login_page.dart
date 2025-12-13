@@ -4,8 +4,9 @@ import 'package:antrean_poliklinik/features/auth/welcome_page.dart';
 import 'package:antrean_poliklinik/features/kios/home/homepage.dart';
 import 'package:antrean_poliklinik/features/caller/home/caller_homepage.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+
+import 'login_service.dart';
+import 'auth_repository.dart';
 
 enum UserType { Petugas, Pasien }
 
@@ -19,12 +20,16 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscure = true;
 
+  final LoginService _loginService = LoginService();
+  final AuthRepository _authRepository = AuthRepository();
+
+  // ================= ALERT =================
   Future<void> showAlert(String title, String message) async {
-    bool isSuccess = title.toLowerCase().contains("berhasil");
+    final isSuccess = title.toLowerCase().contains("berhasil");
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -37,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Icon(
                 isSuccess ? Icons.check_circle : Icons.error,
-                color: isSuccess ? Color(0xFF2B6BFF) : Colors.red,
+                color: isSuccess ? const Color(0xFF2B6BFF) : Colors.red,
                 size: 58,
               ),
               const SizedBox(height: 15),
@@ -59,12 +64,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isSuccess ? Color(0xFF2B6BFF) : Colors.red,
+                    backgroundColor: isSuccess
+                        ? const Color(0xFF2B6BFF)
+                        : Colors.red,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
-                  child: const Text("OK"),
+                  child: const Text(
+                    "OK",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],
@@ -76,73 +86,75 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _toggleObscure() => setState(() => _obscure = !_obscure);
 
+  // ================= SUBMIT LOGIN =================
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      // 1️⃣ VALIDASI INPUT
+      _loginService.validateLogin(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
 
-      final user = credential.user;
-      if (user != null) {
-        await showAlert("Login Berhasil", "Selamat Datang!");
-        checkRole(user.email!);
+      // 2️⃣ LOGIN
+      final user = await _authRepository.login(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      if (user == null) {
+        await showAlert("Login Gagal", "User tidak ditemukan");
+        return;
       }
+
+      // 3️⃣ CEK ROLE
+      final result = await _authRepository.getUserRole(user.email ?? '');
+
+      await showAlert("Login Berhasil", "Selamat Datang!");
+
+      // 4️⃣ NAVIGASI
+      _handleNavigation(result);
     } catch (e) {
-      await showAlert("Login Gagal", "Email atau password salah");
+      await showAlert(
+        "Login Gagal",
+        e.toString().replaceAll('Exception: ', ''),
+      );
     }
   }
 
-  void checkRole(String email) async {
-    final refPetugas = FirebaseDatabase.instance.ref("petugas");
-    final refPasien = FirebaseDatabase.instance.ref("pasien");
-
-    // CEK PETUGAS
-    final snapPetugas = await refPetugas.get();
-    if (snapPetugas.exists) {
-      Map dataPetugas = snapPetugas.value as Map;
-      for (var value in dataPetugas.values) {
-        if (value['email'] == email) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => CallerPage(
-                nama: value["nama"],
-                loketID: value["loket_id"],
-                email: value["email"],
-                uid: value["uid"],
-              ),
-            ),
-          );
-          return;
-        }
-      }
+  // ================= NAVIGASI =================
+  void _handleNavigation(Map? result) {
+    if (result == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      );
+      return;
     }
 
-    // CEK PASIEN
-    final snapPasien = await refPasien.get();
-    if (snapPasien.exists) {
-      Map dataPasien = snapPasien.value as Map;
-      for (var value in dataPasien.values) {
-        if (value['email'] == email) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => HomePage(userData: value)),
-          );
-          return;
-        }
-      }
-    }
+    final role = result['role'];
+    final data = result['data'];
 
-    // JIKA TIDAK DITEMUKAN
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-    );
+    if (role == 'petugas') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CallerPage(
+            nama: data['nama'],
+            loketID: data['loket_id'],
+            email: data['email'],
+            uid: data['uid'],
+          ),
+        ),
+      );
+    } else if (role == 'pasien') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => HomePage(userData: data)),
+      );
+    }
   }
 
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,7 +189,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(width: 48),
                 ],
               ),
-
               const SizedBox(height: 10),
               const AnimatedLoginHeader(),
               const SizedBox(height: 25),
@@ -197,8 +208,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: _emailController,
-                      validator: (v) =>
-                          v!.isEmpty ? "Email tidak boleh kosong" : null,
                       decoration: _inputDecoration("Masukkan Email"),
                     ),
                     const SizedBox(height: 20),
@@ -211,15 +220,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-
                     Stack(
                       alignment: Alignment.centerRight,
                       children: [
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscure,
-                          validator: (v) =>
-                              v!.isEmpty ? "Password tidak boleh kosong" : null,
                           decoration: _inputDecoration("Masukkan Password"),
                         ),
                         IconButton(
@@ -232,7 +238,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
 
                     const SizedBox(height: 12),
-
                     if (widget.userType == UserType.Pasien)
                       Center(
                         child: TextButton(
@@ -246,15 +251,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           child: const Text(
                             'Belum punya akun? Daftar',
-                            style: TextStyle(
-                              color: Color(0xFF2B6BFF),
-                              fontSize: 14,
-                            ),
+                            style: TextStyle(color: Color(0xFF2B6BFF)),
                           ),
                         ),
                       ),
-
-                    const SizedBox(height: 70),
                   ],
                 ),
               ),
@@ -291,16 +291,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Input Decoration Helper
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(50),
-        borderSide: const BorderSide(color: Color(0xFF256EFF)),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(50)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
     );
   }
