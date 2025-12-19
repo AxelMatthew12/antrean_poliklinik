@@ -7,15 +7,15 @@ Sistem Antrean Poliklinik ini merupakan solusi digital yang dirancang untuk memb
 ## 🔰 Komponen Sistem
 Sistem ini terdiri dari 3 komponen utama:
 
-### 📱 1. Aplikasi Mobile Flutter
+### 📱 1. Aplikasi Mobile Flutter(Folder : flutter_antrean)
 Digunakan oleh:
 - **Pasien / Kios Mandiri**
 - **Petugas Poli**
 
-### 🌐 2. Website CRUD Poliklinik
+### 🌐 2. Website CRUD Poliklinik (Folder : web_poli)
 Digunakan untuk mengelola data poliklinik dan antrean.
 
-### 🖥️ 3. Website Display Antrean
+### 🖥️ 3. Website Display Antrean (Folder : web_antrean)
 Digunakan sebagai tampilan layar antrean di ruang tunggu.
 
 ---
